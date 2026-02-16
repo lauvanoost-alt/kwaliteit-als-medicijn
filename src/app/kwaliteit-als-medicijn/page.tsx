@@ -3,7 +3,6 @@ import Link from 'next/link';
 import {
   HeartPulse,
   Lightbulb,
-  Target,
   Users,
   Shield,
   ArrowRight,
@@ -11,17 +10,19 @@ import {
   TrendingDown,
   TrendingUp,
   Sparkles,
-  ChevronRight,
   Building2,
   Handshake,
   Brain,
   BookOpen,
+  Eye,
+  Clock,
+  ChevronDown,
 } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Kwaliteit als Medicijn — Filosofie & Aanpak',
   description:
-    'Een diepgaande toelichting op het Kwaliteit als Medicijn-gedachtegoed: de vier pijlers, het vuist-op-vuist principe, en de vertaling naar jeugd-GGZ in Zuid-Holland Zuid.',
+    'Een diepgaande toelichting op het Kwaliteit als Medicijn-gedachtegoed: de drie pijlers, de vertaling naar jeugdzorg in Zuid-Holland Zuid, en het vuist-op-vuist tijdlijn.',
 };
 
 /* ------------------------------------------------------------------ */
@@ -31,83 +32,196 @@ export const metadata: Metadata = {
 const pillars = [
   {
     number: 1,
-    title: 'Normaliseren & De-medicaliseren',
+    title: 'Niet alles is ziek',
+    subtitle: 'Normaliseren',
     icon: HeartPulse,
     color: 'from-rose-500 to-pink-600',
     bgLight: 'bg-rose-50',
     borderColor: 'border-rose-200',
     textColor: 'text-rose-700',
     description:
-      'Niet elk probleem is een diagnose. Veel klachten horen bij het opgroeien. Door te normaliseren en het zelfoplossend vermogen van jongeren en gezinnen te versterken, voorkomen we onnodige instroom in de GGZ. Dit vereist een cultuuromslag bij verwijzers, professionals \u00e9n ouders.',
+      'Veel klachten horen bij het normale leven en opgroeien en vereisen geen medische behandeling. Door te normaliseren en het zelfoplossend vermogen te versterken, voorkomen we onnodige instroom in de gespecialiseerde zorg.',
   },
   {
     number: 2,
-    title: 'Passende Zorg op het Juiste Moment',
-    icon: Target,
+    title: 'Samen beslissen',
+    subtitle: 'Shared Decision Making',
+    icon: Handshake,
     color: 'from-blue-500 to-indigo-600',
     bgLight: 'bg-blue-50',
     borderColor: 'border-blue-200',
     textColor: 'text-blue-700',
     description:
-      'De juiste zorg, door de juiste professional, op het juiste moment. Door brede intake, vroegtijdige screening en goede triage zorgen we dat jongeren niet onnodig in zware trajecten terechtkomen. Overbruggingszorg tijdens de wachttijd voorkomt verergering en biedt direct perspectief.',
+      'Arts en patiënt beslissen samen wat de juiste zorg is. Wanneer patiënten eerlijke, volledige informatie krijgen over behandelopties — inclusief niets doen — kiezen velen voor minder intensieve zorg. Dit leidt tot meer passende zorg.',
   },
   {
     number: 3,
-    title: 'Kortdurend en Doelgericht Behandelen',
-    icon: Sparkles,
-    color: 'from-amber-500 to-orange-600',
-    bgLight: 'bg-amber-50',
-    borderColor: 'border-amber-200',
-    textColor: 'text-amber-700',
-    description:
-      'Behandeltrajecten die helder zijn in doel, duur en verwachting. De Kracht van Kort laat zien dat kortere, intensievere behandelingen minstens zo effectief zijn als langdurige trajecten \u2014 met meer tevredenheid bij jongeren \u00e9n professionals.',
-  },
-  {
-    number: 4,
-    title: 'Samenwerking & Integraal Werken',
-    icon: Users,
+    title: 'Kwaliteitstransparantie',
+    subtitle: 'Quality Transparency',
+    icon: Eye,
     color: 'from-emerald-500 to-teal-600',
     bgLight: 'bg-emerald-50',
     borderColor: 'border-emerald-200',
     textColor: 'text-emerald-700',
     description:
-      'Geen enkele partij kan het alleen. Aanbieders, gemeenten, huisartsen, wijkteams, scholen en gezinnen moeten samenwerken in een integraal systeem. De gezinsgerichte aanpak en het integraal zorgaanbod laten zien dat afstemming leidt tot minder fragmentatie en betere uitkomsten.',
+      'Het transparant maken van kwaliteitsuitkomsten en praktijkvariatie drijft verbetering. Wanneer zorgverleners kunnen zien hoe ze zich verhouden tot collega\'s, leidt intrinsieke motivatie tot betere zorg. Transparantie is de motor van continue verbetering.',
   },
 ];
 
-const vuistOpVuist = [
+const zhzPillars = [
   {
-    role: 'Serviceorganisatie Jeugd (SoJ) / Inkoper',
-    icon: Building2,
-    color: 'bg-primary-600',
-    items: [
-      'Cre\u00ebert ruimte in contracten voor innovatie',
-      'Stelt data en spiegelinformatie beschikbaar',
-      'Faciliteert de kopgroep-structuur',
-      'Investeert in regionale infrastructuur',
-    ],
-  },
-  {
-    role: 'Aanbieders (alle 90+ in de regio)',
+    title: 'Normaliseren',
     icon: HeartPulse,
-    color: 'bg-accent-600',
-    items: [
-      'Implementeren de 5 initiatieven in hun praktijk',
-      'Delen kennis en resultaten met collega-aanbieders',
-      'Investeren in opleiding en cultuurverandering',
-      'Werken mee aan transparantie en spiegelinformatie',
-    ],
+    color: 'text-rose-600',
+    bgColor: 'bg-rose-50',
+    borderColor: 'border-rose-200',
+    description:
+      'Niet elk jeugdprobleem vraagt om een GGZ-diagnose. Versterk het zelfoplossend vermogen van jongeren en gezinnen.',
   },
   {
-    role: 'Kopgroep (8 voorlopers)',
-    icon: Sparkles,
-    color: 'bg-emerald-600',
-    items: [
-      'Ontwikkelen en testen innovatieve aanpakken',
-      'Bewijzen dat het werkt met data en resultaten',
-      'Inspireren en ondersteunen andere aanbieders',
-      'Vormen de brug tussen idee en brede implementatie',
-    ],
+    title: 'Samen beslissen',
+    icon: Handshake,
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-50',
+    borderColor: 'border-blue-200',
+    description:
+      'Betrek jongeren en gezinnen bij zorgkeuzes. Brede intake met ervaringsdeskundigen. Zorg afstemmen op werkelijke behoeften.',
+  },
+  {
+    title: 'Transparantie',
+    icon: Eye,
+    color: 'text-emerald-600',
+    bgColor: 'bg-emerald-50',
+    borderColor: 'border-emerald-200',
+    description:
+      'Deel praktijkvariatiedata tussen aanbieders. Creëer inzicht in verwijspatronen, behandelduur en uitkomsten.',
+  },
+];
+
+const timelineSteps = [
+  {
+    actor: 'SOJ',
+    label: 'Serviceorganisatie Jeugd',
+    timing: 'Q4 2025',
+    description:
+      'SoJ start KAM en geeft status aan kopgroep door steun toe te zeggen',
+    colorClasses: {
+      dot: 'bg-blue-600',
+      card: 'border-blue-200 bg-blue-50/60',
+      badge: 'bg-blue-100 text-blue-800',
+      text: 'text-blue-900',
+      line: 'text-blue-300',
+    },
+  },
+  {
+    actor: 'Aanbieders',
+    label: 'Alle aanbieders',
+    timing: 'Q1 2026',
+    description:
+      'Aanbieders realiseren zich dat er iets op gang gebracht wordt, maar wachten nog af',
+    colorClasses: {
+      dot: 'bg-amber-500',
+      card: 'border-amber-200 bg-amber-50/60',
+      badge: 'bg-amber-100 text-amber-800',
+      text: 'text-amber-900',
+      line: 'text-amber-300',
+    },
+  },
+  {
+    actor: 'Kopgroep',
+    label: 'Kopgroep (8 voorlopers)',
+    timing: 'Q1-Q2 2026',
+    description: 'Kopgroep komt met eerste ideeën en impact-inschatting',
+    colorClasses: {
+      dot: 'bg-emerald-600',
+      card: 'border-emerald-200 bg-emerald-50/60',
+      badge: 'bg-emerald-100 text-emerald-800',
+      text: 'text-emerald-900',
+      line: 'text-emerald-300',
+    },
+  },
+  {
+    actor: 'SOJ',
+    label: 'Serviceorganisatie Jeugd',
+    timing: 'Q2 2026',
+    description:
+      'SoJ faciliteert de kopgroep (bijv. door financiële steun, toezeggingen voor toekomst)',
+    colorClasses: {
+      dot: 'bg-blue-600',
+      card: 'border-blue-200 bg-blue-50/60',
+      badge: 'bg-blue-100 text-blue-800',
+      text: 'text-blue-900',
+      line: 'text-blue-300',
+    },
+  },
+  {
+    actor: 'Kopgroep',
+    label: 'Kopgroep (8 voorlopers)',
+    timing: 'Q3-Q4 2026',
+    description: 'Kopgroep toont impact in de praktijk aan',
+    colorClasses: {
+      dot: 'bg-emerald-600',
+      card: 'border-emerald-200 bg-emerald-50/60',
+      badge: 'bg-emerald-100 text-emerald-800',
+      text: 'text-emerald-900',
+      line: 'text-emerald-300',
+    },
+  },
+  {
+    actor: 'SOJ',
+    label: 'Serviceorganisatie Jeugd',
+    timing: 'Q1 2027',
+    description:
+      'SoJ communiceert dat transparantie op \u2018kwaliteit als medicijn\u2019 als criterium wordt opgenomen in contractering',
+    colorClasses: {
+      dot: 'bg-blue-600',
+      card: 'border-blue-200 bg-blue-50/60',
+      badge: 'bg-blue-100 text-blue-800',
+      text: 'text-blue-900',
+      line: 'text-blue-300',
+    },
+  },
+  {
+    actor: 'Kopgroep',
+    label: 'Kopgroep (8 voorlopers)',
+    timing: 'Q2 2027',
+    description:
+      'Kopgroep merkt dat hun rol in de beweging serieus is en zet door met nieuwe initiatieven',
+    colorClasses: {
+      dot: 'bg-emerald-600',
+      card: 'border-emerald-200 bg-emerald-50/60',
+      badge: 'bg-emerald-100 text-emerald-800',
+      text: 'text-emerald-900',
+      line: 'text-emerald-300',
+    },
+  },
+  {
+    actor: 'SOJ',
+    label: 'Serviceorganisatie Jeugd',
+    timing: 'Q3-Q4 2027',
+    description:
+      'SoJ past de contracten/voorwaarden aan in de nieuwe contracteringsronde',
+    colorClasses: {
+      dot: 'bg-blue-600',
+      card: 'border-blue-200 bg-blue-50/60',
+      badge: 'bg-blue-100 text-blue-800',
+      text: 'text-blue-900',
+      line: 'text-blue-300',
+    },
+  },
+  {
+    actor: 'Alle aanbieders',
+    label: 'Alle aanbieders',
+    timing: '2028',
+    description:
+      'Alle aanbieders moeten zo werken, anders geen contract',
+    colorClasses: {
+      dot: 'bg-amber-500',
+      card: 'border-amber-200 bg-amber-50/60',
+      badge: 'bg-amber-100 text-amber-800',
+      text: 'text-amber-900',
+      line: 'text-amber-300',
+    },
   },
 ];
 
@@ -164,155 +278,75 @@ export default function KwaliteitAlsMedicijnPage() {
       </div>
 
       {/* ============================================================ */}
-      {/*  2. DE KERNGEDACHTE                                           */}
+      {/*  SECTION A: KWALITEIT ALS MEDICIJN — HET GEDACHTEGOED         */}
       {/* ============================================================ */}
       <section className="mt-16">
         <div className="flex items-start gap-3">
           <Lightbulb className="mt-1 h-6 w-6 shrink-0 text-primary-600" />
-          <h2 className="text-2xl font-bold text-foreground">De Kerngedachte</h2>
+          <h2 className="text-2xl font-bold text-foreground">
+            Kwaliteit als Medicijn — Het Gedachtegoed
+          </h2>
         </div>
         <div className="mt-6 rounded-xl border-l-4 border-primary-500 bg-primary-50/60 p-6 sm:p-8">
           <p className="text-base leading-relaxed text-gray-700 sm:text-lg">
             <strong className="text-foreground">Kwaliteit als Medicijn</strong> is gebaseerd op een
             simpel maar krachtig inzicht: wanneer je de kwaliteit van zorg verhoogt, dalen volumes en
             kosten vanzelf. Niet door te bezuinigen, niet door te rantsoeneren, maar door betere zorg
-            te leveren. Het concept is bewezen in de ziekenhuiszorg (Bernhoven, Rivas: 7-13%
-            volumereductie) en wordt nu vertaald naar de jeugd-GGZ in Zuid-Holland Zuid.
+            te leveren. Het concept is ontwikkeld door Frederick Latour bij het Bernhoven ziekenhuis
+            en bewezen in de curatieve zorg (Bernhoven, Rivas: 7-13% volumereductie).
           </p>
         </div>
-      </section>
 
-      {/* ============================================================ */}
-      {/*  3. DE VIER PIJLERS                                           */}
-      {/* ============================================================ */}
-      <section className="mt-16">
-        <div className="flex items-start gap-3">
-          <Shield className="mt-1 h-6 w-6 shrink-0 text-primary-600" />
-          <h2 className="text-2xl font-bold text-foreground">De Vier Pijlers</h2>
-        </div>
-        <p className="mt-3 text-gray-600">
-          Het Kwaliteit als Medicijn-gedachtegoed voor jeugd-GGZ rust op vier dragende pijlers.
-        </p>
+        {/* De Drie Pijlers */}
+        <div className="mt-10">
+          <div className="flex items-start gap-3">
+            <Shield className="mt-1 h-6 w-6 shrink-0 text-primary-600" />
+            <h3 className="text-xl font-bold text-foreground">De Drie Pijlers</h3>
+          </div>
+          <p className="mt-3 text-gray-600">
+            Het Kwaliteit als Medicijn-gedachtegoed rust op drie dragende pijlers.
+          </p>
 
-        <div className="mt-8 grid gap-6 sm:grid-cols-2">
-          {pillars.map((pillar) => {
-            const Icon = pillar.icon;
-            return (
-              <div
-                key={pillar.number}
-                className={`relative overflow-hidden rounded-2xl border ${pillar.borderColor} ${pillar.bgLight} p-6`}
-              >
-                {/* Number badge */}
+          <div className="mt-8 grid gap-6 lg:grid-cols-3">
+            {pillars.map((pillar) => {
+              const Icon = pillar.icon;
+              return (
                 <div
-                  className={`absolute -right-3 -top-3 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br ${pillar.color} text-2xl font-extrabold text-white opacity-15`}
+                  key={pillar.number}
+                  className={`relative overflow-hidden rounded-2xl border ${pillar.borderColor} ${pillar.bgLight} p-6`}
                 >
-                  {pillar.number}
-                </div>
-
-                <div className="relative z-10">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${pillar.color} text-white`}
-                    >
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <h3 className="text-lg font-bold text-foreground">{pillar.title}</h3>
+                  {/* Number badge */}
+                  <div
+                    className={`absolute -right-3 -top-3 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br ${pillar.color} text-2xl font-extrabold text-white opacity-15`}
+                  >
+                    {pillar.number}
                   </div>
-                  <p className={`mt-4 text-sm leading-relaxed ${pillar.textColor}`}>
-                    {pillar.description}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
 
-      {/* ============================================================ */}
-      {/*  4. HET 'VUIST OP VUIST' PRINCIPE                            */}
-      {/* ============================================================ */}
-      <section className="mt-16">
-        <div className="flex items-start gap-3">
-          <Handshake className="mt-1 h-6 w-6 shrink-0 text-primary-600" />
-          <h2 className="text-2xl font-bold text-foreground">
-            Het &lsquo;Vuist op Vuist&rsquo; Principe
-          </h2>
-        </div>
-        <p className="mt-4 text-gray-600 leading-relaxed">
-          De transformatie van jeugd-GGZ kan alleen slagen als drie partijen tegelijk bewegen — als
-          tandwielen die in elkaar grijpen:
-        </p>
-
-        {/* Visual zigzag timeline */}
-        <div className="relative mt-10">
-          {/* Connecting line */}
-          <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary-300 via-accent-300 to-emerald-300 sm:left-1/2 sm:-translate-x-px" />
-
-          {vuistOpVuist.map((party, idx) => {
-            const Icon = party.icon;
-            const isEven = idx % 2 === 0;
-            return (
-              <div key={party.role} className="relative mb-8 last:mb-0">
-                {/* Connector dot */}
-                <div
-                  className={`absolute left-6 top-6 z-10 h-4 w-4 -translate-x-1/2 rounded-full ${party.color} ring-4 ring-white sm:left-1/2`}
-                />
-
-                {/* Card */}
-                <div
-                  className={`ml-12 sm:ml-0 sm:w-[calc(50%-2rem)] ${
-                    isEven ? 'sm:mr-auto sm:pr-0' : 'sm:ml-auto sm:pl-0'
-                  }`}
-                >
-                  <div className="rounded-xl border border-surface-200 bg-white p-5 shadow-sm">
+                  <div className="relative z-10">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${party.color} text-white`}
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${pillar.color} text-white`}
                       >
                         <Icon className="h-5 w-5" />
                       </div>
-                      <h3 className="font-bold text-foreground">{party.role}</h3>
-                    </div>
-                    <ul className="mt-4 space-y-2">
-                      {party.items.map((item) => (
-                        <li key={item} className="flex items-start gap-2 text-sm text-gray-600">
-                          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary-500" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Arrow between parties */}
-                  {idx < vuistOpVuist.length - 1 && (
-                    <div className="mt-2 flex justify-center">
-                      <div className="flex flex-col items-center text-primary-300">
-                        <ChevronRight className="h-5 w-5 rotate-90" />
+                      <div>
+                        <h4 className="text-lg font-bold text-foreground">{pillar.title}</h4>
+                        <p className="text-xs font-medium text-gray-500">{pillar.subtitle}</p>
                       </div>
                     </div>
-                  )}
+                    <p className={`mt-4 text-sm leading-relaxed ${pillar.textColor}`}>
+                      {pillar.description}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Reinforcing nature callout */}
-        <div className="mt-8 rounded-xl bg-gradient-to-r from-primary-50 to-accent-50 p-5 sm:p-6">
-          <div className="flex items-start gap-3">
-            <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary-600" />
-            <p className="text-sm leading-relaxed text-gray-700">
-              <strong className="text-foreground">Wederzijdse versterking:</strong> De drie partijen
-              versterken elkaar continu. De SoJ schept de voorwaarden, de Kopgroep bewijst wat werkt,
-              en alle aanbieders implementeren de bewezen aanpakken. Stilstand bij een van de drie
-              remt het geheel.
-            </p>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* ============================================================ */}
-      {/*  5. VAN BEWIJS NAAR PRAKTIJK                                  */}
+      {/*  VAN BEWIJS NAAR PRAKTIJK                                     */}
       {/* ============================================================ */}
       <section className="mt-16">
         <div className="flex items-start gap-3">
@@ -346,7 +380,211 @@ export default function KwaliteitAlsMedicijnPage() {
       </section>
 
       {/* ============================================================ */}
-      {/*  6. WAAROM DIT ANDERS IS DAN 'GEWOON BEZUINIGEN'              */}
+      {/*  SECTION B: VERTALING NAAR JEUGDZORG ZUID-HOLLAND ZUID        */}
+      {/* ============================================================ */}
+      <section className="mt-16">
+        <div className="flex items-start gap-3">
+          <Sparkles className="mt-1 h-6 w-6 shrink-0 text-accent-600" />
+          <h2 className="text-2xl font-bold text-foreground">
+            Vertaling naar Jeugdzorg Zuid-Holland Zuid
+          </h2>
+        </div>
+        <div className="mt-6 rounded-xl border-l-4 border-accent-500 bg-accent-50/60 p-6 sm:p-8">
+          <p className="text-base leading-relaxed text-gray-700 sm:text-lg">
+            Het algemene Kwaliteit als Medicijn-gedachtegoed wordt nu specifiek vertaald naar de
+            jeugd-GGZ in de regio Zuid-Holland Zuid. De drie pijlers krijgen een eigen invulling
+            voor de jeugdzorgcontext, gedragen door een{' '}
+            <strong className="text-foreground">kopgroep van 8 voorloper-aanbieders</strong> die
+            met 5 concrete initiatieven het verschil bewijzen.
+          </p>
+        </div>
+
+        {/* ZHZ Drie Pijlers */}
+        <div className="mt-10">
+          <h3 className="text-lg font-bold text-foreground">
+            De drie pijlers vertaald naar jeugdzorg
+          </h3>
+          <div className="mt-6 grid gap-5 sm:grid-cols-3">
+            {zhzPillars.map((pillar) => {
+              const Icon = pillar.icon;
+              return (
+                <div
+                  key={pillar.title}
+                  className={`rounded-xl border ${pillar.borderColor} ${pillar.bgColor} p-5`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon className={`h-5 w-5 ${pillar.color}`} />
+                    <h4 className="font-bold text-foreground">{pillar.title}</h4>
+                  </div>
+                  <p className="mt-3 text-sm leading-relaxed text-gray-600">
+                    {pillar.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 5 Initiatieven & Kopgroep */}
+        <div className="mt-10 grid gap-6 sm:grid-cols-2">
+          <div className="rounded-xl border border-surface-200 bg-white p-6">
+            <h4 className="font-bold text-foreground">De 5 Initiatieven</h4>
+            <ul className="mt-4 space-y-3">
+              {[
+                'Overbruggingszorg',
+                'Brede Intake',
+                'Kracht van Kort',
+                'Gezinsgerichte Aanpak',
+                'Integraal Zorgaanbod',
+              ].map((item) => (
+                <li key={item} className="flex items-center gap-2 text-sm text-gray-700">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-accent-500" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-xl border border-surface-200 bg-white p-6">
+            <h4 className="font-bold text-foreground">De Kopgroep</h4>
+            <p className="mt-3 text-sm leading-relaxed text-gray-600">
+              Een groep van <strong>8 voorloper-aanbieders</strong> die als eersten de
+              KAM-principes in de praktijk brengen. Zij ontwikkelen, testen en bewijzen dat het
+              werkt — en inspireren daarmee de overige aanbieders in de regio om te volgen.
+            </p>
+            <div className="mt-4 flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2">
+              <Users className="h-4 w-4 text-emerald-600" />
+              <span className="text-xs font-medium text-emerald-800">
+                8 frontrunner-aanbieders in Zuid-Holland Zuid
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/*  VUIST OP VUIST — INTERACTIEVE TIJDLIJN                      */}
+      {/* ============================================================ */}
+      <section className="mt-16">
+        <div className="flex items-start gap-3">
+          <Clock className="mt-1 h-6 w-6 shrink-0 text-primary-600" />
+          <h2 className="text-2xl font-bold text-foreground">
+            Het &lsquo;Vuist op Vuist&rsquo; Principe — Tijdlijn
+          </h2>
+        </div>
+        <p className="mt-4 text-gray-600 leading-relaxed">
+          De transformatie van jeugd-GGZ kan alleen slagen als drie partijen stap voor stap
+          samen bewegen. Hieronder de tijdlijn van eind 2025 tot 2028:
+        </p>
+
+        {/* Legend */}
+        <div className="mt-6 flex flex-wrap gap-4">
+          <div className="flex items-center gap-2">
+            <span className="inline-block h-3 w-3 rounded-full bg-blue-600" />
+            <span className="text-sm font-medium text-gray-700">SOJ (Inkoper)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block h-3 w-3 rounded-full bg-emerald-600" />
+            <span className="text-sm font-medium text-gray-700">Kopgroep (8 voorlopers)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block h-3 w-3 rounded-full bg-amber-500" />
+            <span className="text-sm font-medium text-gray-700">Aanbieders</span>
+          </div>
+        </div>
+
+        {/* Timeline */}
+        <div className="relative mt-10">
+          {/* Startpunt label */}
+          <div className="mb-6 flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-800 text-white">
+              <ChevronDown className="h-4 w-4" />
+            </div>
+            <span className="text-sm font-bold uppercase tracking-wider text-gray-500">
+              Startpunt — eind 2025
+            </span>
+          </div>
+
+          {/* Vertical connecting line */}
+          <div className="absolute left-4 top-14 bottom-24 w-0.5 bg-gradient-to-b from-blue-300 via-emerald-300 to-amber-300" />
+
+          {/* Timeline steps */}
+          <div className="space-y-0">
+            {timelineSteps.map((step, idx) => {
+              const isLeft = idx % 2 === 0;
+              return (
+                <div
+                  key={idx}
+                  className="relative pb-8 last:pb-0"
+                  style={{
+                    animation: `fadeSlideIn 0.5s ease-out ${idx * 0.1}s both`,
+                  }}
+                >
+                  {/* Dot on the line */}
+                  <div
+                    className={`absolute left-4 top-5 z-10 h-3.5 w-3.5 -translate-x-1/2 rounded-full ${step.colorClasses.dot} ring-4 ring-white`}
+                    style={{
+                      left: '1.0625rem',
+                    }}
+                  />
+
+                  {/* Card — zigzag with offset */}
+                  <div
+                    className={`ml-12 ${
+                      isLeft ? 'sm:mr-[25%]' : 'sm:ml-[25%]'
+                    }`}
+                  >
+                    <div
+                      className={`rounded-xl border ${step.colorClasses.card} p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5`}
+                    >
+                      {/* Header: badge + timing */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${step.colorClasses.badge}`}
+                        >
+                          {step.actor}
+                        </span>
+                        <span className="text-xs font-medium text-gray-400">{step.timing}</span>
+                      </div>
+
+                      {/* Description */}
+                      <p className={`mt-2 text-sm font-medium leading-relaxed ${step.colorClasses.text}`}>
+                        {step.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Eindpunt label */}
+          <div className="mt-6 flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-800 text-white">
+              <CheckCircle2 className="h-4 w-4" />
+            </div>
+            <span className="text-sm font-bold uppercase tracking-wider text-gray-500">
+              Eindpunt — 2028
+            </span>
+          </div>
+        </div>
+
+        {/* Side annotation */}
+        <div className="mt-8 rounded-xl bg-gradient-to-r from-primary-50 to-amber-50 p-5 sm:p-6 border border-primary-100">
+          <div className="flex items-start gap-3">
+            <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary-600" />
+            <p className="text-sm leading-relaxed text-gray-700">
+              <strong className="text-foreground">Rode draad door het hele traject:</strong>{' '}
+              Door te anticiperen op de nieuwe opzet van contractering ontstaan nu al prikkels om
+              te werken aan passende zorg. Elke stap bouwt voort op de vorige — de cascade van
+              actie en reactie tussen SOJ, kopgroep en aanbieders creëert een onomkeerbare
+              beweging richting kwaliteitsgedreven jeugdzorg.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/*  WAAROM DIT ANDERS IS DAN 'GEWOON BEZUINIGEN'                 */}
       {/* ============================================================ */}
       <section className="mt-16">
         <div className="flex items-start gap-3">
@@ -416,7 +654,7 @@ export default function KwaliteitAlsMedicijnPage() {
       </section>
 
       {/* ============================================================ */}
-      {/*  7. CALL TO ACTION                                            */}
+      {/*  CALL TO ACTION                                               */}
       {/* ============================================================ */}
       <section className="mt-16 rounded-2xl bg-gradient-to-br from-primary-50 via-white to-accent-50 p-8 sm:p-10">
         <h2 className="text-xl font-bold text-primary-900 sm:text-2xl">
@@ -481,6 +719,20 @@ export default function KwaliteitAlsMedicijnPage() {
           </Link>
         </div>
       </section>
+
+      {/* CSS-only animations for server component compatibility */}
+      <style>{`
+        @keyframes fadeSlideIn {
+          from {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 }

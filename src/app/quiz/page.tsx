@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Brain,
@@ -252,6 +252,15 @@ function ConfettiCanvas({ active }: { active: boolean }) {
 /*  Main Quiz Component                                                */
 /* ------------------------------------------------------------------ */
 
+function shuffleArray<T>(arr: T[]): T[] {
+  const shuffled = [...arr];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 export default function QuizPage() {
   const [currentQ, setCurrentQ] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -262,9 +271,13 @@ export default function QuizPage() {
   const [shake, setShake] = useState(false);
   const [answeredCorrectly, setAnsweredCorrectly] = useState<boolean | null>(null);
   const [scoreAnimation, setScoreAnimation] = useState(false);
+  const [shuffleSeed] = useState(() => Math.random());
 
-  const question = questions[currentQ];
-  const progress = ((currentQ + (showExplanation ? 1 : 0)) / questions.length) * 100;
+  // Shuffle questions on mount (stable across re-renders via seed)
+  const shuffledQuestions = useMemo(() => shuffleArray(questions), [shuffleSeed]);
+
+  const question = shuffledQuestions[currentQ];
+  const progress = ((currentQ + (showExplanation ? 1 : 0)) / shuffledQuestions.length) * 100;
 
   const handleAnswer = useCallback(
     (index: number) => {
@@ -289,7 +302,7 @@ export default function QuizPage() {
   );
 
   const nextQuestion = useCallback(() => {
-    if (currentQ < questions.length - 1) {
+    if (currentQ < shuffledQuestions.length - 1) {
       setCurrentQ((q) => q + 1);
       setSelectedAnswer(null);
       setShowExplanation(false);
@@ -298,7 +311,7 @@ export default function QuizPage() {
       setFinished(true);
       setScoreAnimation(true);
     }
-  }, [currentQ]);
+  }, [currentQ, shuffledQuestions.length]);
 
   const restart = useCallback(() => {
     setCurrentQ(0);
@@ -311,7 +324,7 @@ export default function QuizPage() {
   }, []);
 
   const shareScore = useCallback(async () => {
-    const text = `Ik scoorde ${score}/${questions.length} op de Kwaliteit als Medicijn quiz! Hoe goed ken jij de jeugdzorg cijfers? Doe de quiz!`;
+    const text = `Ik scoorde ${score}/${shuffledQuestions.length} op de Kwaliteit als Medicijn quiz! Hoe goed ken jij de jeugdzorg cijfers? Doe de quiz!`;
     if (navigator.share) {
       try {
         await navigator.share({ title: 'Quiz: Kwaliteit als Medicijn', text });
@@ -391,7 +404,7 @@ export default function QuizPage() {
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-4xl font-extrabold text-primary-800">
-                  {score}/{questions.length}
+                  {score}/{shuffledQuestions.length}
                 </span>
                 <span className="text-sm text-gray-500">correct</span>
               </div>
@@ -507,14 +520,14 @@ export default function QuizPage() {
             Hoe goed ken jij de jeugdzorg cijfers?
           </h1>
           <p className="mt-1 text-gray-500">
-            Test je kennis met {questions.length} vragen over de jeugdzorg in Zuid-Holland Zuid
+            Test je kennis met {shuffledQuestions.length} vragen over de jeugdzorg in Zuid-Holland Zuid
           </p>
         </div>
 
         {/* Progress bar */}
         <div className="mb-2 flex items-center justify-between text-sm font-medium text-gray-500">
           <span>
-            Vraag {currentQ + 1} van {questions.length}
+            Vraag {currentQ + 1} van {shuffledQuestions.length}
           </span>
           <span className={`flex items-center gap-1 ${answeredCorrectly === true ? 'animate-score-pop' : ''}`}>
             <Star className="h-4 w-4 text-primary-500" />
@@ -639,7 +652,7 @@ export default function QuizPage() {
               onClick={nextQuestion}
               className="flex items-center gap-2 rounded-xl bg-primary-700 px-6 py-3.5 font-semibold text-white shadow-md transition-all hover:bg-primary-800 hover:shadow-lg active:scale-[0.97]"
             >
-              {currentQ < questions.length - 1 ? (
+              {currentQ < shuffledQuestions.length - 1 ? (
                 <>
                   Volgende vraag
                   <ArrowRight className="h-5 w-5" />

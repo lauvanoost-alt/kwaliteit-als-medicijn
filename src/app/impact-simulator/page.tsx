@@ -187,6 +187,7 @@ export default function ImpactSimulatorPage() {
   const [bggzVolume, setBggzVolume] = useState<number | ''>('');
   const [sggzCost, setSggzCost] = useState<number>(3000);
   const [bggzCost, setBggzCost] = useState<number>(1800);
+  const [years, setYears] = useState<number>(1);
   const [selectedInitiatives, setSelectedInitiatives] = useState<Set<string>>(
     new Set()
   );
@@ -248,34 +249,45 @@ export default function ImpactSimulatorPage() {
     // BGGZ reduction applied to original BGGZ volume
     const bggzReduced = Math.round(bggz * combinedBggzReduction);
 
-    // Cost savings
-    // SGGZ savings: reduced SGGZ * sggzCost + shifted * (sggzCost - bggzCost)
-    const sggzSavings = sggzReduced * sggzCost + shiftedToBggz * (sggzCost - bggzCost);
-    const bggzSavings = bggzReduced * bggzCost;
-    const totalSavings = sggzSavings + bggzSavings;
+    // Cost savings per year
+    const sggzSavingsPerYear = sggzReduced * sggzCost + shiftedToBggz * (sggzCost - bggzCost);
+    const bggzSavingsPerYear = bggzReduced * bggzCost;
+    const totalSavingsPerYear = sggzSavingsPerYear + bggzSavingsPerYear;
+
+    // Cumulative over years
+    const sggzSavings = sggzSavingsPerYear * years;
+    const bggzSavings = bggzSavingsPerYear * years;
+    const totalSavings = totalSavingsPerYear * years;
+
+    // Cumulative trajecten reductie
+    const cumulativeSggzReduced = sggzReduced * years;
+    const cumulativeBggzReduced = bggzReduced * years;
+    const cumulativeShiftedToBggz = shiftedToBggz * years;
 
     // Break-even
     const totalInvestment =
       selected.length * IMPLEMENTATION_COST_PER_INITIATIVE;
     const breakEvenMonths =
-      totalSavings > 0
-        ? Math.ceil((totalInvestment / totalSavings) * 12)
+      totalSavingsPerYear > 0
+        ? Math.ceil((totalInvestment / totalSavingsPerYear) * 12)
         : null;
 
     return {
       combinedSggzReductionPct: combinedSggzReduction * 100,
       combinedBggzReductionPct: combinedBggzReduction * 100,
-      sggzReduced,
-      bggzReduced,
-      shiftedToBggz,
+      sggzReduced: cumulativeSggzReduced,
+      bggzReduced: cumulativeBggzReduced,
+      shiftedToBggz: cumulativeShiftedToBggz,
       sggzSavings,
       bggzSavings,
       totalSavings,
+      totalSavingsPerYear,
       totalInvestment,
       breakEvenMonths,
       initiativeCount: selected.length,
+      years,
     };
-  }, [sggzVolume, bggzVolume, sggzCost, bggzCost, selectedInitiatives]);
+  }, [sggzVolume, bggzVolume, sggzCost, bggzCost, selectedInitiatives, years]);
 
   const hasInput =
     (typeof sggzVolume === 'number' && sggzVolume > 0) ||
@@ -466,6 +478,55 @@ export default function ImpactSimulatorPage() {
                     />
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Looptijd (years) */}
+            <div className="rounded-2xl bg-white shadow-md border border-gray-100 p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600">
+                  <Calculator size={20} />
+                </span>
+                <h2 className="text-lg font-bold text-gray-900">
+                  Looptijd
+                </h2>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="years"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Aantal jaar
+                </label>
+                <div className="flex items-center gap-4">
+                  <input
+                    id="years"
+                    type="range"
+                    min={1}
+                    max={10}
+                    value={years}
+                    onChange={(e) => setYears(Number(e.target.value))}
+                    className="flex-1 h-2 rounded-full appearance-none bg-gray-200 accent-emerald-500"
+                  />
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min={1}
+                      max={10}
+                      value={years}
+                      onChange={(e) => {
+                        const v = Number(e.target.value);
+                        if (v >= 1 && v <= 10) setYears(v);
+                      }}
+                      className="w-20 rounded-xl border border-gray-300 bg-white py-3 px-4 text-center text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all text-sm font-bold"
+                    />
+                  </div>
+                  <span className="text-sm text-gray-500 font-medium">jaar</span>
+                </div>
+                <p className="mt-2 text-xs text-gray-400">
+                  Besparingen en volumes worden cumulatief berekend over de geselecteerde periode.
+                </p>
               </div>
             </div>
 
@@ -665,7 +726,7 @@ export default function ImpactSimulatorPage() {
                       <div className="flex items-center gap-2 mb-3">
                         <DollarSign size={18} />
                         <span className="font-semibold text-sm uppercase tracking-wider">
-                          Totale Kostenbesparing
+                          Cumulatieve Kostenbesparing
                         </span>
                       </div>
                       <p className="text-4xl font-extrabold tracking-tight">
@@ -673,6 +734,9 @@ export default function ImpactSimulatorPage() {
                           target={results.totalSavings}
                           formatFn={(v) => formatEuro(Math.round(v))}
                         />
+                      </p>
+                      <p className="text-xs text-indigo-200 mt-1">
+                        over {results.years} jaar ({formatEuro(results.totalSavingsPerYear)} per jaar)
                       </p>
                       <div className="flex flex-col gap-1 mt-3 text-sm text-indigo-100">
                         <span>
@@ -733,7 +797,7 @@ export default function ImpactSimulatorPage() {
                           )}
                         </p>
                         <p className="text-xs text-indigo-200 mt-0.5">
-                          Minder trajecten
+                          Minder trajecten ({results.years}j)
                         </p>
                       </div>
                       <div className="text-center rounded-xl bg-white/10 p-3">

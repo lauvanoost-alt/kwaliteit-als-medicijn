@@ -47,7 +47,7 @@ const initiatieven: Initiatief[] = [
     randvoorwaarden:
       'Ruimte nodig vanuit contractering voor innovatieve producten. Voorkomen dat het traject tot meer volume leidt.',
     businessCase:
-      '\u20AC3.000 per SGGZ-traject, 20% stroomt uit, 40% naar BGGZ (\u20AC1.800). Per 100 jongeren: 20 \u00D7 \u20AC3.000 + 40 \u00D7 \u20AC1.200 besparing = ca. \u20AC108.000. Regionaal ~\u20AC2,0 mln per jaar.',
+      '20% stroomt volledig uit, 40% verschuift naar lichtere BGGZ. De verwachte regionale besparing is ~\u20AC2,0 mln per jaar. Pas de trajectkosten aan in de Impact Simulator om het effect met uw eigen cijfers door te rekenen.',
   },
   {
     titel: 'Brede Intake',
@@ -63,7 +63,7 @@ const initiatieven: Initiatief[] = [
     randvoorwaarden:
       'Structureel financi\u00EBle ruimte voor vroege inzet van experts. Contractueel borgen dat koplopers niet benadeeld worden.',
     businessCase:
-      'Bij vroege expertise-inzet: 40% van SGGZ-verwezen jongeren naar BGGZ/wijkteam. Per jongere: \u20AC3.000 - \u20AC1.800 = \u20AC1.200 besparing. Regionaal ~\u20AC2,5 mln per jaar.',
+      'Bij vroege expertise-inzet verschuift ca. 40% van SGGZ-verwezen jongeren naar BGGZ of wijkteam. De verwachte regionale besparing is ~\u20AC2,5 mln per jaar. Gebruik de Impact Simulator om het effect met uw eigen cijfers door te rekenen.',
   },
   {
     titel: 'De Kracht van Kort',
@@ -79,7 +79,7 @@ const initiatieven: Initiatief[] = [
     randvoorwaarden:
       'Transparantie m.b.t. behandelduur en herinstroom. Financi\u00EBle incentives verkennen.',
     businessCase:
-      '10-20% kortere trajecten bij gemiddeld \u20AC3.000/traject. Per 100 trajecten: \u20AC30.000-\u20AC60.000. Regionaal: \u20AC1,8 - \u20AC3,6 mln per jaar.',
+      '10-20% kortere behandeltrajecten levert regionaal naar schatting \u20AC1,8 \u2013 \u20AC3,6 mln per jaar op. Gebruik de Impact Simulator om het effect met uw eigen cijfers door te rekenen.',
   },
   {
     titel: 'Gezinsgerichte Aanpak',
@@ -95,7 +95,7 @@ const initiatieven: Initiatief[] = [
     randvoorwaarden:
       'Laagdrempelige afstemming, inzicht in verwijsgeschiedenis, communicatie richting huisartsen.',
     businessCase:
-      'In ontwikkeling. Verwachte impact: minder herverwijzingen, minder parallelle trajecten binnen gezinnen. Potentieel \u20AC0,5 - 1,0 mln regionaal.',
+      'In ontwikkeling. Verwachte impact: minder herverwijzingen en minder parallelle trajecten binnen gezinnen. Potentieel \u20AC0,5 \u2013 1,0 mln regionaal per jaar.',
   },
   {
     titel: 'Integraal Zorgaanbod met Groepsbegeleiding',
@@ -111,7 +111,7 @@ const initiatieven: Initiatief[] = [
     randvoorwaarden:
       'Laagdrempelige afstemming behandelaar-begeleider, mogelijkheden groepsbegeleiding als product.',
     businessCase:
-      'In ontwikkeling. Groepsbegeleiding (1:4) vs individueel (1:1): ~75% kostenreductie per uur begeleiding. Potentieel \u20AC0,3 - 0,8 mln regionaal.',
+      'In ontwikkeling. Groepsbegeleiding versus individueel biedt aanzienlijke effici\u00ebntiewinst. Potentieel \u20AC0,3 \u2013 0,8 mln regionaal per jaar.',
   },
 ];
 

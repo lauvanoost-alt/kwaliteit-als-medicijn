@@ -225,51 +225,53 @@ function savingsEuro(m: Municipality): string {
 /*  Geographic shapes & label positions                                */
 /* ------------------------------------------------------------------ */
 
-// Simplified geographic polygon paths for each municipality
+// Geographically accurate polygon paths for each municipality (viewBox 0 0 800 600)
+// Layout: Rivers run west-east. Oude Maas in north, Noord runs N-S near Dordrecht,
+// Beneden Merwede runs W-E from Papendrecht area eastward.
 const municipalityShapes: Record<number, string> = {
-  // Hoeksche Waard - large area in the northwest, island-like shape
-  10: 'M 30,180 L 80,120 L 180,90 L 280,100 L 320,140 L 310,200 L 280,250 L 200,270 L 120,260 L 50,230 Z',
+  // Hoeksche Waard - LARGE island in the southwest, south of Oude Maas
+  10: 'M 20,260 L 60,220 L 130,195 L 220,185 L 290,200 L 310,230 L 300,290 L 310,340 L 290,400 L 250,450 L 180,480 L 100,470 L 40,430 L 20,370 L 15,310 Z',
 
-  // Dordrecht - center-west, compact urban area
-  1: 'M 280,260 L 330,240 L 390,250 L 410,290 L 400,340 L 360,360 L 310,350 L 270,320 L 265,280 Z',
+  // Dordrecht - central, on its own island between rivers
+  1: 'M 310,230 L 340,215 L 380,220 L 400,240 L 400,280 L 390,310 L 370,340 L 340,350 L 310,340 L 300,290 Z',
 
-  // Zwijndrecht - small area north of Dordrecht
-  2: 'M 330,200 L 380,190 L 420,210 L 430,240 L 390,250 L 330,240 Z',
+  // Zwijndrecht - north bank of Oude Maas, directly north of Dordrecht, small
+  2: 'M 280,120 L 330,105 L 380,110 L 390,140 L 380,170 L 340,180 L 300,175 L 280,155 Z',
 
-  // Hendrik-Ido-Ambacht - small area east of Zwijndrecht
-  3: 'M 420,210 L 470,195 L 510,220 L 500,260 L 460,270 L 430,250 Z',
+  // Hendrik-Ido-Ambacht - east of Zwijndrecht, north bank, small
+  3: 'M 380,110 L 430,100 L 470,115 L 475,145 L 460,170 L 420,178 L 380,170 L 390,140 Z',
 
-  // Papendrecht - east of Dordrecht, along the river
-  4: 'M 410,290 L 460,270 L 510,280 L 530,310 L 510,340 L 460,350 L 420,330 Z',
+  // Alblasserdam - east of HIA, north bank, small
+  6: 'M 470,115 L 520,105 L 555,120 L 555,155 L 535,175 L 500,178 L 460,170 L 475,145 Z',
 
-  // Sliedrecht - east of Papendrecht, along the river
-  5: 'M 510,280 L 560,260 L 620,280 L 630,310 L 600,340 L 550,340 L 520,320 Z',
+  // Papendrecht - south of Alblasserdam, east of Dordrecht, between rivers
+  4: 'M 400,240 L 440,220 L 490,225 L 520,245 L 520,280 L 500,300 L 460,305 L 420,295 L 400,280 Z',
 
-  // Alblasserdam - north of Papendrecht
-  6: 'M 470,195 L 520,180 L 560,200 L 560,240 L 530,260 L 500,260 L 480,230 Z',
+  // Sliedrecht - east of Papendrecht, along south bank of Beneden Merwede
+  5: 'M 520,245 L 570,230 L 620,240 L 630,270 L 620,295 L 580,305 L 540,300 L 520,280 Z',
 
-  // Gorinchem - far east, urban center
-  7: 'M 630,310 L 680,290 L 730,310 L 740,360 L 710,400 L 660,390 L 630,360 Z',
+  // Hardinxveld-Giessendam - east of Sliedrecht, elongated along river
+  9: 'M 620,240 L 670,225 L 710,235 L 715,260 L 705,285 L 665,295 L 630,290 L 620,295 L 630,270 Z',
 
-  // Molenlanden - large rural area in the east/center
-  8: 'M 450,360 L 510,340 L 600,340 L 660,390 L 710,400 L 700,460 L 650,500 L 550,510 L 470,480 L 430,430 L 440,380 Z',
+  // Gorinchem - far east, urban center at confluence
+  7: 'M 710,235 L 750,225 L 785,250 L 790,300 L 775,340 L 740,355 L 710,340 L 705,305 L 705,285 L 715,260 Z',
 
-  // Hardinxveld-Giessendam - between Sliedrecht and Gorinchem
-  9: 'M 560,260 L 620,240 L 680,260 L 680,290 L 630,310 L 600,300 L 560,280 Z',
+  // Molenlanden - LARGE rural area south and southeast, below river line
+  8: 'M 390,310 L 420,295 L 460,305 L 500,300 L 540,300 L 580,305 L 620,295 L 665,295 L 705,305 L 710,340 L 740,355 L 730,410 L 700,460 L 640,510 L 550,540 L 460,530 L 390,490 L 360,430 L 340,350 L 370,340 Z',
 };
 
 // Approximate label centers for each municipality shape
 const labelPositions: Record<number, { x: number; y: number }> = {
-  10: { x: 175, y: 185 }, // Hoeksche Waard
-  1: { x: 340, y: 300 },  // Dordrecht
-  2: { x: 380, y: 220 },  // Zwijndrecht
-  3: { x: 465, y: 235 },  // Hendrik-Ido-Ambacht
-  4: { x: 470, y: 310 },  // Papendrecht
-  5: { x: 570, y: 305 },  // Sliedrecht
-  6: { x: 520, y: 220 },  // Alblasserdam
-  7: { x: 685, y: 350 },  // Gorinchem
-  8: { x: 570, y: 430 },  // Molenlanden
-  9: { x: 625, y: 270 },  // Hardinxveld-Giessendam
+  10: { x: 170, y: 340 }, // Hoeksche Waard
+  1: { x: 350, y: 280 },  // Dordrecht
+  2: { x: 330, y: 145 },  // Zwijndrecht
+  3: { x: 428, y: 142 },  // Hendrik-Ido-Ambacht
+  6: { x: 510, y: 145 },  // Alblasserdam
+  4: { x: 460, y: 265 },  // Papendrecht
+  5: { x: 572, y: 268 },  // Sliedrecht
+  9: { x: 665, y: 262 },  // Hardinxveld-Giessendam
+  7: { x: 748, y: 290 },  // Gorinchem
+  8: { x: 540, y: 420 },  // Molenlanden
 };
 
 /* ------------------------------------------------------------------ */
@@ -279,9 +281,11 @@ const labelPositions: Record<number, { x: number; y: number }> = {
 function DetailPanel({
   municipality,
   onClose,
+  onSelectMunicipality,
 }: {
   municipality: Municipality;
   onClose: () => void;
+  onSelectMunicipality: (m: Municipality) => void;
 }) {
   const m = municipality;
   const diffCosts = m.costs - avgCosts;
@@ -396,14 +400,22 @@ function DetailPanel({
               <BarChart3 className="h-4 w-4" />
               Kosten per 1000 inwoners - alle gemeenten
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-1">
               {sorted.map((item) => (
-                <div key={item.id} className="flex items-center gap-2">
+                <button
+                  key={item.id}
+                  onClick={() => onSelectMunicipality(item)}
+                  className={`flex w-full items-center gap-2 rounded-lg px-1 py-1 text-left transition-colors cursor-pointer ${
+                    item.id === m.id
+                      ? 'bg-slate-100'
+                      : 'hover:bg-slate-50'
+                  }`}
+                >
                   <span
                     className={`w-36 truncate text-right text-xs ${
                       item.id === m.id
                         ? 'font-bold text-slate-900'
-                        : 'text-slate-500'
+                        : 'text-slate-500 group-hover:text-slate-700'
                     }`}
                   >
                     {item.name}
@@ -435,7 +447,7 @@ function DetailPanel({
                   >
                     {'\u20AC'}{item.costs}k
                   </span>
-                </div>
+                </button>
               ))}
             </div>
             <p className="mt-1.5 text-center text-[10px] text-slate-400">
@@ -600,16 +612,20 @@ export default function GemeentekaartPage() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-sky-900">
-                  Gemeenten kunnen hun uitkomsten beinvloeden
+                  Waarom vergelijken? ~22% van de kostenvariatie is beleidsgestuurd
                 </p>
                 <p className="mt-1 text-sm text-sky-700">
-                  Onderzoek toont aan dat circa{' '}
-                  <span className="font-bold">22% van de kostenvariatie</span>{' '}
-                  tussen gemeenten verklaard wordt door lokaal beleid - niet door
-                  demografische verschillen. Dit betekent dat gemeenten via
-                  gericht beleid (verwijsgedrag, contractafspraken, preventie en
-                  wijkteams) hun jeugd-GGZ kosten substantieel kunnen
-                  beinvloeden.
+                  Circa <span className="font-bold">78% van de kostenverschillen</span>{' '}
+                  tussen gemeenten wordt verklaard door sociaaleconomische en
+                  demografische factoren (bevolkingssamenstelling, inkomensniveaus,
+                  etc.) die gemeenten niet direct kunnen beinvloeden. Maar de
+                  overige{' '}
+                  <span className="font-bold">~22% wordt bepaald door lokaal beleid</span>:{' '}
+                  verwijsgedrag van huisartsen, contractafspraken met aanbieders,
+                  preventie-investeringen en inzet van wijkteams. Dat is een
+                  substantieel aandeel. Als gemeenten met hoge kosten hun
+                  beleidsgestuurde kosten richting het gemiddelde verschuiven,
+                  zijn aanzienlijke besparingen mogelijk.
                 </p>
               </div>
             </div>
@@ -624,28 +640,38 @@ export default function GemeentekaartPage() {
                   Geografische kaart
                 </h2>
                 <svg
-                  viewBox="0 0 800 700"
+                  viewBox="0 0 800 600"
                   className="w-full"
                   style={{ maxHeight: '600px' }}
                 >
                   {/* Background */}
-                  <rect width="800" height="700" fill="#f8fafc" rx="8" />
+                  <rect width="800" height="600" fill="#f8fafc" rx="8" />
 
-                  {/* River: Oude Maas */}
+                  {/* River: Oude Maas - runs west-east in the north, between Hoeksche Waard (south) and Zwijndrecht/HIA/Alblasserdam (north) */}
                   <path
-                    d="M 20,250 C 100,240 200,260 280,255 S 350,235 420,240 S 500,250 550,245"
+                    d="M 10,200 C 80,195 160,192 250,195 S 320,200 360,198 S 420,195 480,200 S 540,195 560,192"
                     stroke="#93c5fd"
-                    strokeWidth="3"
+                    strokeWidth="4"
                     fill="none"
                     opacity="0.5"
                     strokeLinecap="round"
                   />
 
-                  {/* River: Beneden Merwede */}
+                  {/* River: Noord - runs north-south connecting Oude Maas to Beneden Merwede near Dordrecht */}
                   <path
-                    d="M 420,245 C 480,260 540,255 600,260 S 650,270 700,275"
+                    d="M 360,198 C 370,210 385,218 395,230"
                     stroke="#93c5fd"
-                    strokeWidth="3"
+                    strokeWidth="4"
+                    fill="none"
+                    opacity="0.5"
+                    strokeLinecap="round"
+                  />
+
+                  {/* River: Beneden Merwede - runs west-east from Papendrecht area eastward past Sliedrecht, Hardinxveld, to Gorinchem */}
+                  <path
+                    d="M 395,230 C 440,218 490,215 540,220 S 600,228 650,225 S 700,230 750,228"
+                    stroke="#93c5fd"
+                    strokeWidth="4"
                     fill="none"
                     opacity="0.5"
                     strokeLinecap="round"
@@ -725,8 +751,8 @@ export default function GemeentekaartPage() {
 
                   {/* River labels */}
                   <text
-                    x="150"
-                    y="248"
+                    x="120"
+                    y="188"
                     className="text-[9px] italic"
                     fill="#93c5fd"
                     opacity="0.8"
@@ -735,8 +761,18 @@ export default function GemeentekaartPage() {
                     Oude Maas
                   </text>
                   <text
-                    x="580"
-                    y="272"
+                    x="370"
+                    y="216"
+                    className="text-[9px] italic"
+                    fill="#93c5fd"
+                    opacity="0.7"
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    Noord
+                  </text>
+                  <text
+                    x="570"
+                    y="215"
                     className="text-[9px] italic"
                     fill="#93c5fd"
                     opacity="0.8"
@@ -816,10 +852,10 @@ export default function GemeentekaartPage() {
                   </div>
                   <div className="rounded-xl bg-slate-50 p-3">
                     <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">
-                      Beinvloedbaar
+                      Beleidsgestuurd
                     </p>
                     <p className="mt-1 text-xl font-bold text-sky-600">~22%</p>
-                    <p className="text-xs text-slate-500">van kostenvariatie</p>
+                    <p className="text-xs text-slate-500">van kostenvariatie is beleidsgestuurd</p>
                   </div>
                 </div>
               </div>
@@ -922,6 +958,7 @@ export default function GemeentekaartPage() {
         <DetailPanel
           municipality={selected}
           onClose={() => setSelected(null)}
+          onSelectMunicipality={(m) => setSelected(m)}
         />
       )}
     </>
