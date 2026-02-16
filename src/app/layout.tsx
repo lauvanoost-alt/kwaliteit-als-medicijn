@@ -5,8 +5,8 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: {
-    default: 'MyCareTeam — Jeugd GGZ Zuid-Holland Zuid',
-    template: '%s | MyCareTeam',
+    default: 'Kwaliteit-Als-Medicijn-ZHZ — Jeugd GGZ Zuid-Holland Zuid',
+    template: '%s | Kwaliteit-Als-Medicijn-ZHZ',
   },
   description:
     'Platform voor jeugd GGZ initiatieven in Zuid-Holland Zuid. Ontdek pilots, deel kennis en werk samen aan minder volumes en betere kwaliteit.',

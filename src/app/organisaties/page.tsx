@@ -5,7 +5,7 @@ import { organizations } from '@/data/organizations';
 
 export const metadata: Metadata = {
   title: 'Organisaties',
-  description: 'Deelnemende organisaties aan het MyCareTeam platform in Zuid-Holland Zuid.',
+  description: 'Deelnemende organisaties aan het Kwaliteit-Als-Medicijn-ZHZ platform in Zuid-Holland Zuid.',
 };
 
 const typeLabels: Record<string, string> = {

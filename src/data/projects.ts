@@ -176,6 +176,67 @@ export const projects: Project[] = [
     accessLevel: 'free',
     featured: true,
   },
+  {
+    slug: 'kracht-van-kort',
+    titel: 'De Kracht van Kort',
+    subtitel: 'Korter en effectiever behandelen door gestructureerde aanpak en cultuurverandering',
+    status: 'lopend',
+    themas: ['reablement', 'normaliseren'],
+    organisaties: ['perspectief', 'eleos'],
+    doelgroep: 'Behandelaren en jongeren in de specialistische GGZ (SSGZ)',
+    regio: 'Zuid-Holland Zuid',
+    aanleiding:
+      'SSGZ-trajecten overschrijden regelmatig de beoogde looptijd van 1 jaar. Er ontbreekt een helder protocol voor het bewaken van behandelduur, en bij behandelaren bestaat een "zorgreflex" — de neiging om door te behandelen in plaats van af te ronden. Dit leidt tot onnodige volumes en hogere kosten.',
+    doel:
+      'Behandeltrajecten in de SSGZ verkorten met 10-20% door een gestructureerde werkwijze, cultuurverandering bij behandelaren en institutionalisering in de organisatie. Hierdoor ontstaat meer capaciteit, dalen de kosten en krijgen jongeren heldere verwachtingen over de duur van hun behandeling.',
+    aanpak:
+      '## De aanpak in twee sporen\n\n### Spoor 1: Kracht van Kort-training voor behandelaren\n\nBehandelaren worden getraind in vier kernprincipes:\n\n1. **Vooraf afspraken over behandelduur** — bij de start van het traject wordt met de jongere en het gezin een heldere verwachting uitgesproken over de beoogde duur\n2. **Concrete behandeldoelen met tussentijdse evaluaties** — niet open-ended behandelen, maar periodiek evalueren of doelen behaald zijn en of het traject kan worden afgerond\n3. **De boodschap: hulp is tijdelijk** — vertrouwen uitstralen dat de jongere het zelf kan, behandeling is een tijdelijke ondersteuning, geen blijvende begeleiding\n4. **Goede therapeutische relatie en gelijkwaardig samenwerken** — de jongere als partner in het traject, niet als passieve ontvanger\n\n### Spoor 2: Institutionalisering in de organisatie\n\nTraining alleen is niet genoeg. Om duurzaam effect te bereiken wordt de Kracht van Kort-filosofie verankerd in de organisatie:\n\n- **Spiegelinformatie** — behandelaren krijgen inzicht in hun eigen behandelduur ten opzichte van collega\'s en de norm\n- **Periodieke evaluaties** — structureel moment waarop trajecten worden geëvalueerd op duur en voortgang\n- **Systeemaanpassingen** — administratieve en digitale systemen ondersteunen de werkwijze (bijv. automatische signalering bij overschrijding)\n\n## Wat doet Perspectief?\n\nPerspectief is initiatiefnemer en heeft behandelaren opgeleid in de Kracht van Kort-methodiek. De focus ligt op het trainen van teams en het aanpassen van werkprocessen.\n\n## Wat doet Eleos?\n\nEleos heeft medewerkers opgeleid in Kracht van Kort en legt de nadruk op borging in de interne organisatie:\n\n- Zorgprogramma\'s aangepast met duidelijke kaders voor behandelduur\n- Regiebehandelaren nemen deel aan 2-wekelijks MDO (intervisie) over trajectduur\n- Behandelaren zijn verantwoordelijk voor het naleven van de filosofie via herscholing en feedbackcycli\n- Periodieke evaluaties zijn gepland (nog niet volledig gerealiseerd)\n- De institutionalisering maakt opschaling naar andere teams mogelijk',
+    resultaten:
+      '## Wat levert het op?\n\n### Voor jongeren\n- Heldere verwachtingen over de duur van de behandeling\n- Extra commitment: samen werken aan concrete doelen binnen een afgebakend traject\n- Sneller weer op eigen benen staan\n\n### Maatschappelijk\n- GGZ-volumes en kosten dalen doordat trajecten korter worden\n- Meer capaciteit voor nieuwe jongeren\n\n### Besparingspotentieel\nBij een verkorting van 10-20% van behandeltrajecten is het besparingspotentieel **€1,8 tot €3,6 miljoen** per jaar (berekend op basis van 5.542 jongeren in SSGZ in ZHZ).\n\n## Wat weten we uit de literatuur?\n\n### Dimence — team Angst & Stemming\nBij Dimence leidde een vergelijkbare aanpak ertoe dat het aandeel cliënten dat langer dan 2 jaar in behandeling was daalde van circa 20% naar circa 5%.\n\n### Jeugdstem\nJeugdstem heeft vertrouwenspersonen getraind in de Kracht van Kort-principes, zodat jongeren ook vanuit hun eigen ondersteuner horen dat behandeling tijdelijk is.\n\n### Eleos\nEleos combineert training van behandelaren met structurele reflectie en borging in de organisatie. De effecten worden nog systematisch gemeten.\n\n**Let op**: De effecten van Kracht van Kort zijn landelijk nog beperkt onderzocht. Er is noodzaak tot verdere institutionalisering en systematisch meten van uitkomsten.',
+    impact: {
+      wachtlijstReductie: '10-20% kortere trajecten (beoogd)',
+      kostenBesparing: '€1,8 - €3,6 mln besparingspotentieel per jaar',
+      bereik: '5.542 jongeren in SSGZ ZHZ (potentieel)',
+      samenvatting:
+        'Door behandeltrajecten te verkorten met 10-20% via gestructureerde werkwijze en cultuurverandering bij behandelaren, kunnen jaarlijks miljoenen aan kosten worden bespaard en komt er meer behandelcapaciteit vrij.',
+    },
+    gelpierdeLessen:
+      '- Training alleen is niet genoeg: institutionalisering (spiegelinformatie, evaluaties, systeemaanpassingen) is essentieel voor duurzaam effect\n- Behandelaren hebben "tegendruk" nodig om de zorgreflex te doorbreken\n- Transparantie over behandelduur en herinstroom is een belangrijke randvoorwaarde\n- Financiële incentives zoals regressieve tarieven kunnen helpen: hoe langer het traject, hoe lager het tarief per sessie\n- De combinatie van training en borging (zoals bij Eleos) maakt opschaling mogelijk',
+    startDatum: '2025-06-01',
+    contactPersonen: [],
+    tags: ['kracht-van-kort', 'behandelduur', 'training', 'cultuurverandering', 'institutionalisering', 'SSGZ'],
+    accessLevel: 'free',
+    featured: true,
+  },
+  {
+    slug: 'gezinsgerichte-aanpak',
+    titel: 'Gezinsgerichte Aanpak',
+    subtitel: 'Zorg voor het hele gezinssysteem in plaats van losse diagnoses en labels',
+    status: 'lopend',
+    themas: ['gezinsaanpak', 'normaliseren'],
+    organisaties: ['familysupporters'],
+    doelgroep: 'Gezinnen met jeugdigen in de GGZ waar meerdere aanbieders betrokken zijn',
+    regio: 'Zuid-Holland Zuid',
+    aanleiding:
+      'De huidige jeugd GGZ is sterk gericht op individuele diagnoses en labels. Dit leidt tot fragmentatie: meerdere aanbieders zijn betrokken bij één gezin zonder onderlinge afstemming, er wordt gemedicaliseerd waar normalisering passender zou zijn, en het gezinssysteem als geheel wordt onvoldoende betrokken in de behandeling.',
+    doel:
+      'Het verschuiven van individuele, labelgerichte zorg naar een gezinsgerichte aanpak waarin het hele systeem en de context van de jongere centraal staan. Hierdoor wordt zorg passender, nemen volumes op totaalniveau af en wordt onnodige medicalisering voorkomen.',
+    aanpak:
+      '## De aanpak in drie pijlers\n\n### 1. Richten op de hele context\n\nNiet alleen kijken naar de jongere met een diagnose, maar naar het hele gezinssysteem. Wat speelt er thuis? Hoe verhouden gezinsleden zich tot elkaar? Welke patronen houden de problematiek in stand?\n\nDoor het gezin als geheel te betrekken, wordt de behandeling effectiever en duurzamer.\n\n### 2. Minder diagnosticeren en labelen\n\nNiet elk gedragsprobleem vraagt om een diagnose. De gezinsgerichte aanpak zet in op normalisering en het versterken van het gezinssysteem, in plaats van het plakken van labels op individuele gezinsleden.\n\nDit voorkomt onnodige medicalisering en houdt de regie bij het gezin.\n\n### 3. Afstemming tussen aanbieders\n\nWanneer meerdere aanbieders betrokken zijn bij één gezin, ontstaat er vaak overlap, tegenstrijdige adviezen en gebrek aan regie. De gezinsgerichte aanpak organiseert actieve afstemming tussen alle betrokken partijen.\n\n## Hoe werkt het in de praktijk?\n\nFamilySupporters zet in op:\n\n- **Gezinsplan als centraal instrument** — één integraal plan voor het hele gezin, niet losse behandelplannen per gezinslid\n- **Laagdrempelige afstemming** — korte lijnen tussen alle betrokken hulpverleners rondom een gezin\n- **Inzicht in verwijsgeschiedenis** — weten welke hulpverlening al eerder is ingezet, om herhaling en overlap te voorkomen\n- **Pro-actieve communicatie met huisartsen** — de huisarts als spil informeren over het gezinsplan en de voortgang',
+    resultaten:
+      '## Wat levert het op?\n\n### Voor gezinnen\n- Passende zorg die aansluit bij het gezinssysteem, niet alleen bij een individuele diagnose\n- Minder labels en minder medicalisering\n- Eén aanspreekpunt en samenhangend plan in plaats van losse trajecten\n- Meer regie bij het gezin zelf\n\n### Maatschappelijk\n- Lagere volumes op totaalniveau doordat het gezin als geheel wordt geholpen in plaats van individuele trajecten per gezinslid\n- Minder overlap en fragmentatie in de zorg\n- Efficiëntere inzet van schaarse GGZ-capaciteit\n\n### Status\nFamilySupporters past deze werkwijze toe in de dagelijkse praktijk. Systematische effectmeting wordt nog opgezet.',
+    impact: {
+      samenvatting:
+        'Door zorg te richten op het hele gezinssysteem in plaats van op losse diagnoses, wordt de hulpverlening passender en samenhangender. Dit leidt tot minder volumes op totaalniveau en minder onnodige medicalisering.',
+    },
+    gelpierdeLessen:
+      '- Een gezinsplan als declarabel product is een belangrijke randvoorwaarde — zonder financiering van het gezinsplan blijft het bij goede intenties\n- Inzicht in de verwijsgeschiedenis van het gezin is essentieel om overlap te voorkomen\n- Pro-actieve communicatie met de huisarts vergroot het draagvlak en de effectiviteit\n- Laagdrempelige afstemmingsstructuren (bijv. korte gezinsoverleggen) kosten weinig tijd maar leveren veel op',
+    startDatum: '2025-06-01',
+    contactPersonen: [],
+    tags: ['gezinsaanpak', 'systeemgericht', 'contextgericht', 'normaliseren', 'labels', 'afstemming'],
+    accessLevel: 'free',
+    featured: true,
+  },
 ];
 
 export function getProjectBySlug(slug: string): Project | undefined {

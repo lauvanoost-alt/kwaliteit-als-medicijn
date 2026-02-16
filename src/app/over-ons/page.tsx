@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowRight, Target, Eye, Users, Lightbulb } from 'lucide-react';
+import { ArrowRight, Target, Eye, Users, Lightbulb, Building2 } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Over ons',
-  description: 'Over MyCareTeam: het platform voor jeugd GGZ initiatieven in Zuid-Holland Zuid.',
+  description: 'Over Kwaliteit-Als-Medicijn-ZHZ: het platform voor jeugd GGZ initiatieven in Zuid-Holland Zuid.',
 };
 
 const principles = [
@@ -30,19 +30,99 @@ const principles = [
   },
 ];
 
+const kopgroepLeden = [
+  { naam: 'De Hoop', profiel: 'Breed, christelijk', bereik: 'Bovenregionaal, 10+ locaties', slug: 'de-hoop' },
+  { naam: 'Perspectief', profiel: 'Generalistisch ambulant', bereik: 'Regionaal, 4 locaties', slug: 'perspectief' },
+  { naam: 'Parnassia Groep', profiel: 'Complexe casuïstiek', bereik: 'Bovenregionaal, 500+ locaties', slug: 'parnassia-groep' },
+  { naam: 'NeuroScan', profiel: 'Specialistisch wetenschappelijk', bereik: 'Lokaal, 1 locatie', slug: 'neuroscan' },
+  { naam: 'Eleos', profiel: 'Breed, christelijk', bereik: 'Bovenregionaal, 20+ locaties', slug: 'eleos' },
+  { naam: 'FamilySupporters', profiel: 'Systeem- en contextgericht', bereik: 'Bovenregionaal, 20+ locaties', slug: 'familysupporters' },
+  { naam: 'Mentaal Beter', profiel: 'Breed', bereik: 'Bovenregionaal, 100+ locaties', slug: 'mentaal-beter' },
+  { naam: 'CareHouse', profiel: 'Jeugdigen met beperking', bereik: 'Bovenregionaal, 15+ locaties', slug: 'carehouse' },
+];
+
 export default function OverOnsPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Over MyCareTeam</h1>
+      <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Over Kwaliteit-Als-Medicijn-ZHZ</h1>
 
       <section className="mt-8">
         <h2 className="text-lg font-semibold text-foreground">Onze missie</h2>
         <p className="mt-3 text-gray-600 leading-relaxed">
-          MyCareTeam maakt alle lopende en afgeronde initiatieven rondom volume-reductie en Kwaliteit
+          Kwaliteit-Als-Medicijn-ZHZ maakt alle lopende en afgeronde initiatieven rondom volume-reductie en Kwaliteit
           als Medicijn in de jeugd GGZ van Zuid-Holland Zuid zichtbaar, vindbaar en deelbaar. Zo
           kunnen zorgaanbieders en professionals leren van elkaar, kennis kopiëren en
           doorontwikkelen, en samen werken aan betere zorg met minder volumes.
         </p>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-lg font-semibold text-foreground">Context: Kwaliteit als Medicijn in ZHZ</h2>
+        <div className="mt-4 space-y-3 text-gray-600 leading-relaxed">
+          <p>
+            De regio Zuid-Holland Zuid werkt aan een regionale transformatie van de jeugd GGZ, aangestuurd
+            vanuit het IZA-beleid. Het doel: betere zorg met minder volumes. Onder de noemer{' '}
+            <strong>Kwaliteit als Medicijn</strong> worden initiatieven verzameld die bijdragen aan het
+            verkorten van trajecten, het verminderen van instroom, het normaliseren van hulpvragen en het
+            verhogen van effectiviteit.
+          </p>
+          <p>
+            Om dit concreet te maken, is er een <strong>kopgroep</strong> gevormd van acht diverse
+            jeugd GGZ aanbieders in de regio. Deze kopgroep fungeert als voorhoede: ze ontwikkelen,
+            testen en delen initiatieven waarvan de hele regio kan leren.
+          </p>
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-lg font-semibold text-foreground">De Kopgroep: 8 aanbieders</h2>
+        <p className="mt-2 text-gray-500 text-sm">
+          Alle segment 4-aanbieders in ZHZ zijn uitgenodigd voor de kopgroep. Acht diverse organisaties
+          hebben zich aangemeld en voeren verdiepende gesprekken over hun initiatieven en ervaringen.
+        </p>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          {kopgroepLeden.map((lid) => (
+            <Link
+              key={lid.slug}
+              href={`/organisaties/${lid.slug}`}
+              className="group flex items-start gap-3 rounded-xl border border-surface-200 bg-white p-4 transition-all hover:border-primary-200 hover:shadow-sm"
+            >
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-600">
+                <Building2 className="h-4 w-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground group-hover:text-primary-700">{lid.naam}</h3>
+                <p className="text-xs text-gray-500">{lid.profiel}</p>
+                <p className="text-xs text-gray-400">{lid.bereik}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+        <div className="mt-4 rounded-lg bg-surface-50 p-4">
+          <h3 className="text-sm font-semibold text-foreground">Hoe is de kopgroep tot stand gekomen?</h3>
+          <ol className="mt-2 space-y-1.5 text-sm text-gray-600">
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700">1</span>
+              Aanbieders geïnformeerd via memo en toelichting tijdens de ontwikkeltafel
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700">2</span>
+              Alle segment 4-aanbieders in ZHZ uitgenodigd voor deelname aan de kopgroep
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700">3</span>
+              8 diverse aanbieders aangemeld bij de Serviceorganisatie Jeugd (SoJ)
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700">4</span>
+              2-3 verdiepende gesprekken gevoerd per aanbieder
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700">5</span>
+              Volgende stap: werksessie met kopgroepleden en wethouders
+            </li>
+          </ol>
+        </div>
       </section>
 
       <section className="mt-10">
