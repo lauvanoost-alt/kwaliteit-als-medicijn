@@ -8,7 +8,10 @@ export const siteConfig = {
   navigation: [
     { label: 'Home', href: '/' },
     { label: 'Dashboard', href: '/dashboard' },
+    { label: 'Initiatieven', href: '/initiatieven' },
+    { label: 'Impact Simulator', href: '/impact-simulator' },
     { label: 'Gemeentekaart', href: '/gemeentekaart' },
+    { label: 'Kwaliteit als Medicijn', href: '/kwaliteit-als-medicijn' },
     { label: 'Community', href: '/community' },
     { label: 'Quiz', href: '/quiz' },
     { label: 'Organisaties', href: '/organisaties' },

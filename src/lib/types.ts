@@ -73,10 +73,11 @@ export interface Project {
 export interface Organization {
   slug: string;
   naam: string;
-  type: 'ggz-instelling' | 'gemeente' | 'huisartsenpraktijk' | 'onderwijs' | 'overig';
+  type: 'ggz-instelling' | 'gemeente' | 'huisartsenpraktijk' | 'onderwijs' | 'jeugdzorg-aanbieder' | 'overig';
   beschrijving: string;
   website?: string;
   regio: string;
+  isKopgroep: boolean;
   projectSlugs: string[];
   contactPersonen: string[];
 }

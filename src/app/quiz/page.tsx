@@ -91,12 +91,48 @@ const questions: Question[] = [
     explanation:
       'Het tekort groeit van 1.000 in 2024 naar 5.500 in 2034. Dit maakt het nog urgenter om met minder personeel betere zorg te leveren \u2013 precies wat Kwaliteit als Medicijn beoogt.',
   },
+  {
+    question: 'Wat is de kerngedachte achter "Kwaliteit als Medicijn"?',
+    options: [
+      'Door kwaliteit te verhogen dalen volumes en kosten vanzelf',
+      'Door kosten te verlagen stijgt de kwaliteit automatisch',
+      'Door meer personeel in te zetten verbetert alles',
+      'Door wachtlijsten weg te werken lost het probleem zich op',
+    ],
+    correctIndex: 0,
+    explanation:
+      'De kern van Kwaliteit als Medicijn is dat betere kwaliteit leidt tot minder onnodige behandelingen, kortere trajecten en passendere zorg. Het resultaat: lagere volumes en kosten \u2014 niet als doel op zich, maar als gevolg van betere zorg.',
+  },
+  {
+    question: 'Wat bedoelen we met "normaliseren" binnen het Kwaliteit als Medicijn-gedachtegoed?',
+    options: [
+      'Jongeren leren dat hun problemen niet bestaan',
+      'Erkennen dat niet elk probleem een diagnose of behandeling nodig heeft',
+      'Alle jongeren dezelfde standaardbehandeling geven',
+      'De wachtlijsten accepteren als normaal',
+    ],
+    correctIndex: 1,
+    explanation:
+      'Normaliseren betekent dat we erkennen dat veel klachten bij het opgroeien horen en niet altijd een GGZ-diagnose of behandeling vereisen. Door te de-medicaliseren en te vertrouwen op eigen kracht, het netwerk en laagdrempelige ondersteuning, voorkomen we onnodige instroom in de GGZ.',
+  },
+  {
+    question: 'Waarom is de samenwerking tussen aanbieders, gemeenten en de inkoper (SoJ) zo cruciaal in het Kwaliteit als Medicijn-model?',
+    options: [
+      'Omdat de wet dat verplicht',
+      'Omdat geen enkele partij alleen de transformatie kan realiseren \u2014 het vereist gelijktijdige actie op meerdere niveaus',
+      'Omdat het budget anders niet wordt uitgegeven',
+      'Omdat de inspectie erop controleert',
+    ],
+    correctIndex: 1,
+    explanation:
+      'De transformatie kan alleen slagen als alle partijen tegelijk bewegen: aanbieders innoveren in hun zorgaanbod, gemeenten faciliteren met beleid en verwijsafspraken, en de inkoper (SoJ) cre\u00ebert ruimte in contracten en bekostiging. Dit is het "vuist op vuist"-principe \u2014 elke actie versterkt de andere.',
+  },
 ];
 
 const verdicts = [
   {
     min: 0,
-    max: 2,
+    max: 3,
     title: 'Beginner',
     description: 'Je hebt nog veel te ontdekken over de jeugdzorg!',
     icon: Lightbulb,
@@ -105,8 +141,8 @@ const verdicts = [
     border: 'border-amber-200',
   },
   {
-    min: 3,
-    max: 4,
+    min: 4,
+    max: 6,
     title: 'Op weg',
     description: 'Je kent de basis, maar er valt nog veel te leren.',
     icon: Target,
@@ -115,8 +151,8 @@ const verdicts = [
     border: 'border-blue-200',
   },
   {
-    min: 5,
-    max: 6,
+    min: 7,
+    max: 8,
     title: 'Expert in wording',
     description: 'Indrukwekkend! Je kent de materie goed.',
     icon: Star,
@@ -125,8 +161,8 @@ const verdicts = [
     border: 'border-primary-200',
   },
   {
-    min: 7,
-    max: 7,
+    min: 9,
+    max: 10,
     title: 'Kwaliteitsmeester',
     description: 'Je bent klaar om de transformatie te leiden!',
     icon: Trophy,

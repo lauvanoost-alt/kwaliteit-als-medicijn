@@ -222,44 +222,55 @@ function savingsEuro(m: Municipality): string {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Hexagonal grid positions (schematic)                               */
+/*  Geographic shapes & label positions                                */
 /* ------------------------------------------------------------------ */
 
-// Layout: approximate geographic positions as a hex-like grid
-// We'll position them on a grid. Each cell is roughly 180x160.
-// Row 0 (top):       Hoeksche Waard    (west/south-west in reality)
-// Row 1:             Dordrecht          Zwijndrecht
-// Row 2:             H-I-Ambacht        Papendrecht        Alblasserdam
-// Row 3:             Sliedrecht         Molenlanden
-// Row 4 (bottom):    Gorinchem          Hardinxveld-G.
+// Simplified geographic polygon paths for each municipality
+const municipalityShapes: Record<number, string> = {
+  // Hoeksche Waard - large area in the northwest, island-like shape
+  10: 'M 30,180 L 80,120 L 180,90 L 280,100 L 320,140 L 310,200 L 280,250 L 200,270 L 120,260 L 50,230 Z',
 
-interface HexPos {
-  id: number;
-  cx: number;
-  cy: number;
-}
+  // Dordrecht - center-west, compact urban area
+  1: 'M 280,260 L 330,240 L 390,250 L 410,290 L 400,340 L 360,360 L 310,350 L 270,320 L 265,280 Z',
 
-const hexPositions: HexPos[] = [
-  { id: 10, cx: 160, cy: 70 }, // Hoeksche Waard
-  { id: 1, cx: 120, cy: 210 }, // Dordrecht
-  { id: 2, cx: 320, cy: 210 }, // Zwijndrecht
-  { id: 3, cx: 180, cy: 350 }, // Hendrik-Ido-Ambacht
-  { id: 4, cx: 380, cy: 350 }, // Papendrecht
-  { id: 6, cx: 560, cy: 350 }, // Alblasserdam
-  { id: 5, cx: 280, cy: 490 }, // Sliedrecht
-  { id: 8, cx: 500, cy: 490 }, // Molenlanden
-  { id: 7, cx: 160, cy: 630 }, // Gorinchem
-  { id: 9, cx: 400, cy: 630 }, // Hardinxveld-Giessendam
-];
+  // Zwijndrecht - small area north of Dordrecht
+  2: 'M 330,200 L 380,190 L 420,210 L 430,240 L 390,250 L 330,240 Z',
 
-function hexPoints(cx: number, cy: number, r: number): string {
-  const pts: string[] = [];
-  for (let i = 0; i < 6; i++) {
-    const angle = (Math.PI / 3) * i - Math.PI / 6;
-    pts.push(`${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`);
-  }
-  return pts.join(' ');
-}
+  // Hendrik-Ido-Ambacht - small area east of Zwijndrecht
+  3: 'M 420,210 L 470,195 L 510,220 L 500,260 L 460,270 L 430,250 Z',
+
+  // Papendrecht - east of Dordrecht, along the river
+  4: 'M 410,290 L 460,270 L 510,280 L 530,310 L 510,340 L 460,350 L 420,330 Z',
+
+  // Sliedrecht - east of Papendrecht, along the river
+  5: 'M 510,280 L 560,260 L 620,280 L 630,310 L 600,340 L 550,340 L 520,320 Z',
+
+  // Alblasserdam - north of Papendrecht
+  6: 'M 470,195 L 520,180 L 560,200 L 560,240 L 530,260 L 500,260 L 480,230 Z',
+
+  // Gorinchem - far east, urban center
+  7: 'M 630,310 L 680,290 L 730,310 L 740,360 L 710,400 L 660,390 L 630,360 Z',
+
+  // Molenlanden - large rural area in the east/center
+  8: 'M 450,360 L 510,340 L 600,340 L 660,390 L 710,400 L 700,460 L 650,500 L 550,510 L 470,480 L 430,430 L 440,380 Z',
+
+  // Hardinxveld-Giessendam - between Sliedrecht and Gorinchem
+  9: 'M 560,260 L 620,240 L 680,260 L 680,290 L 630,310 L 600,300 L 560,280 Z',
+};
+
+// Approximate label centers for each municipality shape
+const labelPositions: Record<number, { x: number; y: number }> = {
+  10: { x: 175, y: 185 }, // Hoeksche Waard
+  1: { x: 340, y: 300 },  // Dordrecht
+  2: { x: 380, y: 220 },  // Zwijndrecht
+  3: { x: 465, y: 235 },  // Hendrik-Ido-Ambacht
+  4: { x: 470, y: 310 },  // Papendrecht
+  5: { x: 570, y: 305 },  // Sliedrecht
+  6: { x: 520, y: 220 },  // Alblasserdam
+  7: { x: 685, y: 350 },  // Gorinchem
+  8: { x: 570, y: 430 },  // Molenlanden
+  9: { x: 625, y: 270 },  // Hardinxveld-Giessendam
+};
 
 /* ------------------------------------------------------------------ */
 /*  Components                                                         */
@@ -610,52 +621,44 @@ export default function GemeentekaartPage() {
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                 <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
                   <MapPin className="h-4 w-4 text-sky-500" />
-                  Schematische kaart
+                  Geografische kaart
                 </h2>
                 <svg
-                  viewBox="0 0 700 730"
+                  viewBox="0 0 800 700"
                   className="w-full"
                   style={{ maxHeight: '600px' }}
                 >
-                  {/* Connection lines */}
-                  {[
-                    [10, 1],
-                    [10, 2],
-                    [1, 2],
-                    [1, 3],
-                    [2, 4],
-                    [3, 4],
-                    [3, 5],
-                    [4, 6],
-                    [4, 5],
-                    [5, 8],
-                    [6, 8],
-                    [5, 7],
-                    [7, 9],
-                    [5, 9],
-                    [8, 9],
-                  ].map(([a, b]) => {
-                    const pa = hexPositions.find((p) => p.id === a)!;
-                    const pb = hexPositions.find((p) => p.id === b)!;
-                    return (
-                      <line
-                        key={`${a}-${b}`}
-                        x1={pa.cx}
-                        y1={pa.cy}
-                        x2={pb.cx}
-                        y2={pb.cy}
-                        stroke="#e2e8f0"
-                        strokeWidth="2"
-                      />
-                    );
-                  })}
+                  {/* Background */}
+                  <rect width="800" height="700" fill="#f8fafc" rx="8" />
 
-                  {/* Hexagons */}
-                  {hexPositions.map((pos) => {
-                    const m = municipalities.find((m) => m.id === pos.id)!;
+                  {/* River: Oude Maas */}
+                  <path
+                    d="M 20,250 C 100,240 200,260 280,255 S 350,235 420,240 S 500,250 550,245"
+                    stroke="#93c5fd"
+                    strokeWidth="3"
+                    fill="none"
+                    opacity="0.5"
+                    strokeLinecap="round"
+                  />
+
+                  {/* River: Beneden Merwede */}
+                  <path
+                    d="M 420,245 C 480,260 540,255 600,260 S 650,270 700,275"
+                    stroke="#93c5fd"
+                    strokeWidth="3"
+                    fill="none"
+                    opacity="0.5"
+                    strokeLinecap="round"
+                  />
+
+                  {/* Municipality polygons */}
+                  {municipalities.map((m) => {
+                    const shapePath = municipalityShapes[m.id];
+                    const label = labelPositions[m.id];
+                    if (!shapePath || !label) return null;
+
                     const isHovered = hovered === m.id;
                     const isSelected = selected?.id === m.id;
-                    const r = isHovered || isSelected ? 72 : 65;
                     const fill = costColor(m.costs);
 
                     return (
@@ -665,34 +668,27 @@ export default function GemeentekaartPage() {
                         onClick={() => setSelected(m)}
                         onMouseEnter={() => setHovered(m.id)}
                         onMouseLeave={() => setHovered(null)}
-                        style={{
-                          transition: 'transform 0.15s ease',
-                        }}
                       >
-                        {/* Shadow */}
-                        <polygon
-                          points={hexPoints(pos.cx + 2, pos.cy + 3, r)}
-                          fill="rgba(0,0,0,0.06)"
-                        />
-                        {/* Main hex */}
-                        <polygon
-                          points={hexPoints(pos.cx, pos.cy, r)}
-                          fill={fill + '20'}
-                          stroke={isSelected ? fill : fill + '80'}
-                          strokeWidth={isSelected ? 3 : 2}
+                        {/* Main shape */}
+                        <path
+                          d={shapePath}
+                          fill={
+                            isSelected
+                              ? fill + '40'
+                              : isHovered
+                              ? fill + '30'
+                              : fill + '20'
+                          }
+                          stroke={isSelected ? fill : isHovered ? fill : fill + '80'}
+                          strokeWidth={isSelected ? 3 : isHovered ? 2.5 : 1.5}
+                          strokeDasharray={isHovered && !isSelected ? '6 3' : 'none'}
                           style={{ transition: 'all 0.15s ease' }}
                         />
-                        {/* Inner hex accent */}
-                        <polygon
-                          points={hexPoints(pos.cx, pos.cy, r - 4)}
-                          fill="none"
-                          stroke={fill + '30'}
-                          strokeWidth="1"
-                        />
-                        {/* Name */}
+
+                        {/* Municipality name */}
                         <text
-                          x={pos.cx}
-                          y={pos.cy - 14}
+                          x={label.x}
+                          y={label.y - 14}
                           textAnchor="middle"
                           className="fill-slate-800 text-[11px] font-bold"
                           style={{ pointerEvents: 'none' }}
@@ -701,51 +697,53 @@ export default function GemeentekaartPage() {
                             ? m.name.slice(0, 14) + '...'
                             : m.name}
                         </text>
+
                         {/* Cost */}
                         <text
-                          x={pos.cx}
-                          y={pos.cy + 4}
+                          x={label.x}
+                          y={label.y + 2}
                           textAnchor="middle"
                           className="text-[12px] font-semibold"
                           style={{ fill, pointerEvents: 'none' }}
                         >
                           {'\u20AC'}{m.costs}k
                         </text>
+
                         {/* Score */}
                         <text
-                          x={pos.cx}
-                          y={pos.cy + 20}
+                          x={label.x}
+                          y={label.y + 16}
                           textAnchor="middle"
                           className="fill-slate-500 text-[10px]"
                           style={{ pointerEvents: 'none' }}
                         >
                           score: {m.score}
                         </text>
-                        {/* Population */}
-                        <text
-                          x={pos.cx}
-                          y={pos.cy + 33}
-                          textAnchor="middle"
-                          className="fill-slate-400 text-[9px]"
-                          style={{ pointerEvents: 'none' }}
-                        >
-                          {formatK(m.population)} inw.
-                        </text>
-
-                        {/* Hover indicator */}
-                        {isHovered && !isSelected && (
-                          <polygon
-                            points={hexPoints(pos.cx, pos.cy, r + 4)}
-                            fill="none"
-                            stroke={fill}
-                            strokeWidth="2"
-                            strokeDasharray="6 3"
-                            opacity={0.5}
-                          />
-                        )}
                       </g>
                     );
                   })}
+
+                  {/* River labels */}
+                  <text
+                    x="150"
+                    y="248"
+                    className="text-[9px] italic"
+                    fill="#93c5fd"
+                    opacity="0.8"
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    Oude Maas
+                  </text>
+                  <text
+                    x="580"
+                    y="272"
+                    className="text-[9px] italic"
+                    fill="#93c5fd"
+                    opacity="0.8"
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    Beneden Merwede
+                  </text>
                 </svg>
               </div>
 
