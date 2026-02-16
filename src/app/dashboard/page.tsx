@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Trophy,
   TrendingUp,
@@ -43,24 +43,6 @@ const providers: Provider[] = [
   { name: 'FamilySupporters', initiatives: 1, volumeReduction: 7.2, efficiencyGain: 10, revenueImpact: 5.1, score: 3, trend: 'up' },
   { name: 'Mentaal Beter', initiatives: 1, volumeReduction: 5.4, efficiencyGain: 7, revenueImpact: 3.6, score: 2, trend: 'down' },
   { name: 'CareHouse', initiatives: 1, volumeReduction: 3.1, efficiencyGain: 4, revenueImpact: 2.2, score: 2, trend: 'stable' },
-];
-
-interface Initiative {
-  id: string;
-  name: string;
-  volumeReduction: number;
-  costSavings: number;
-  efficiencyGain: number;
-  satisfactionBoost: number;
-  color: string;
-}
-
-const initiatives: Initiative[] = [
-  { id: 'overbruggingszorg', name: 'Overbruggingszorg', volumeReduction: 11, costSavings: 340000, efficiencyGain: 14, satisfactionBoost: 8, color: '#6366f1' },
-  { id: 'brede-intake', name: 'Brede Intake', volumeReduction: 14, costSavings: 420000, efficiencyGain: 18, satisfactionBoost: 12, color: '#8b5cf6' },
-  { id: 'kracht-van-kort', name: 'Kracht van Kort', volumeReduction: 15, costSavings: 510000, efficiencyGain: 22, satisfactionBoost: 10, color: '#a855f7' },
-  { id: 'gezinsgerichte-aanpak', name: 'Gezinsgerichte Aanpak', volumeReduction: 5, costSavings: 180000, efficiencyGain: 8, satisfactionBoost: 15, color: '#d946ef' },
-  { id: 'integraal-zorgaanbod', name: 'Integraal Zorgaanbod', volumeReduction: 8, costSavings: 290000, efficiencyGain: 12, satisfactionBoost: 9, color: '#ec4899' },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -186,25 +168,9 @@ function Tooltip({ children, text }: { children: React.ReactNode; text: string }
 /* ------------------------------------------------------------------ */
 
 export default function DashboardPage() {
-  const [activeInitiatives, setActiveInitiatives] = useState<Set<string>>(new Set());
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
-
-  const toggleInitiative = useCallback((id: string) => {
-    setActiveInitiatives((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
-
-  // Compute simulator totals
-  const simVolume = initiatives.filter((i) => activeInitiatives.has(i.id)).reduce((s, i) => s + i.volumeReduction, 0);
-  const simCost = initiatives.filter((i) => activeInitiatives.has(i.id)).reduce((s, i) => s + i.costSavings, 0);
-  const simEfficiency = initiatives.filter((i) => activeInitiatives.has(i.id)).reduce((s, i) => s + i.efficiencyGain, 0);
-  const simSatisfaction = initiatives.filter((i) => activeInitiatives.has(i.id)).reduce((s, i) => s + i.satisfactionBoost, 0);
 
   // Region totals
   const totalVolumeReduction = providers.reduce((s, p) => s + p.volumeReduction, 0) / providers.length;
@@ -393,148 +359,6 @@ export default function DashboardPage() {
                 </div>
               );
             })}
-          </div>
-        </section>
-
-        {/* ============================================================ */}
-        {/*  SECTION 2 — IMPACT SIMULATOR                                */}
-        {/* ============================================================ */}
-        <section>
-          <div className="flex items-center gap-2 mb-2">
-            <Target size={24} className="text-fuchsia-600" />
-            <h2 className="text-2xl font-bold text-gray-900">Impact Simulator</h2>
-          </div>
-          <p className="text-gray-500 mb-6 max-w-xl">Selecteer initiatieven om het verwachte effect voor een fictieve aanbieder te berekenen. Combineer meerdere initiatieven om het cumulatieve impact te zien.</p>
-
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-8">
-            {/* Left: initiative toggles */}
-            <div className="space-y-3">
-              {initiatives.map((init) => {
-                const isActive = activeInitiatives.has(init.id);
-                return (
-                  <button
-                    key={init.id}
-                    onClick={() => toggleInitiative(init.id)}
-                    className={`w-full text-left rounded-xl border-2 p-4 transition-all duration-300 ${
-                      isActive
-                        ? 'border-indigo-400 bg-indigo-50/60 shadow-md shadow-indigo-100'
-                        : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span
-                          className={`inline-flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
-                            isActive ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-400'
-                          }`}
-                        >
-                          {isActive ? <CheckCircle2 size={18} /> : <Target size={18} />}
-                        </span>
-                        <div>
-                          <span className="font-semibold text-gray-900 block">{init.name}</span>
-                          <span className="text-xs text-gray-500">
-                            ~{init.volumeReduction}% volumereductie &middot; +{init.satisfactionBoost}% tevredenheid
-                          </span>
-                        </div>
-                      </div>
-                      <span
-                        className={`text-xs font-bold px-2.5 py-1 rounded-full transition-colors ${
-                          isActive ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-500'
-                        }`}
-                      >
-                        {isActive ? 'AAN' : 'UIT'}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Right: calculated impact */}
-            <div className="rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-fuchsia-600 text-white p-8 shadow-xl flex flex-col justify-between relative overflow-hidden">
-              <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-              <div className="relative space-y-8">
-                <div>
-                  <p className="text-indigo-200 text-sm font-semibold uppercase tracking-wider mb-1">Berekend Effect</p>
-                  <p className="text-3xl font-extrabold">{activeInitiatives.size} van 5 initiatieven actief</p>
-                </div>
-
-                {/* Gauges */}
-                <div className="space-y-5">
-                  {/* Volume */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="flex items-center gap-1.5 text-sm font-medium"><TrendingDown size={14} /> Volumereductie</span>
-                      <span className="text-lg font-extrabold">{simVolume}%</span>
-                    </div>
-                    <div className="w-full bg-white/20 rounded-full h-4 overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-white/90"
-                        style={{ width: `${Math.min(simVolume / 55 * 100, 100)}%`, transition: 'width 0.6s cubic-bezier(0.4,0,0.2,1)' }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Cost */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="flex items-center gap-1.5 text-sm font-medium"><DollarSign size={14} /> Kostenbesparing</span>
-                      <span className="text-lg font-extrabold">&euro;{simCost.toLocaleString('nl-NL')}</span>
-                    </div>
-                    <div className="w-full bg-white/20 rounded-full h-4 overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-emerald-300"
-                        style={{ width: `${Math.min(simCost / 1800000 * 100, 100)}%`, transition: 'width 0.6s cubic-bezier(0.4,0,0.2,1)' }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Efficiency */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="flex items-center gap-1.5 text-sm font-medium"><Zap size={14} /> Efficiencywinst</span>
-                      <span className="text-lg font-extrabold">{simEfficiency}%</span>
-                    </div>
-                    <div className="w-full bg-white/20 rounded-full h-4 overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-amber-300"
-                        style={{ width: `${Math.min(simEfficiency / 75 * 100, 100)}%`, transition: 'width 0.6s cubic-bezier(0.4,0,0.2,1)' }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Satisfaction */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="flex items-center gap-1.5 text-sm font-medium"><Heart size={14} /> Cliënttevredenheid</span>
-                      <span className="text-lg font-extrabold">+{simSatisfaction}%</span>
-                    </div>
-                    <div className="w-full bg-white/20 rounded-full h-4 overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-pink-300"
-                        style={{ width: `${Math.min(simSatisfaction / 55 * 100, 100)}%`, transition: 'width 0.6s cubic-bezier(0.4,0,0.2,1)' }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom motivational text */}
-              <div className="relative mt-8 pt-6 border-t border-white/20">
-                {activeInitiatives.size === 0 && (
-                  <p className="text-indigo-200 text-sm italic">Selecteer initiatieven om het verwachte effect te berekenen...</p>
-                )}
-                {activeInitiatives.size > 0 && activeInitiatives.size < 3 && (
-                  <p className="text-indigo-200 text-sm flex items-center gap-2"><TrendingUp size={16} /> Goed begin! Voeg meer initiatieven toe om de impact te vergroten.</p>
-                )}
-                {activeInitiatives.size >= 3 && activeInitiatives.size < 5 && (
-                  <p className="text-amber-200 text-sm flex items-center gap-2"><Award size={16} /> Sterke combinatie! Dit plaatst u in de top 3 van de kopgroep.</p>
-                )}
-                {activeInitiatives.size === 5 && (
-                  <p className="text-emerald-200 text-sm flex items-center gap-2"><Trophy size={16} /> Maximale impact! U behaalt het hoogst mogelijke resultaat.</p>
-                )}
-              </div>
-            </div>
           </div>
         </section>
 
