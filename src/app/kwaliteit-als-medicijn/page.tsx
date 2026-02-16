@@ -32,69 +32,85 @@ export const metadata: Metadata = {
 const pillars = [
   {
     number: 1,
-    title: 'Niet alles is ziek',
-    subtitle: 'Normaliseren',
+    title: 'Verminderen overbehandeling en praktijkvariatie',
+    subtitle: 'Evidence-based behandelen',
     icon: HeartPulse,
     color: 'from-rose-500 to-pink-600',
     bgLight: 'bg-rose-50',
     borderColor: 'border-rose-200',
     textColor: 'text-rose-700',
     description:
-      'Veel klachten horen bij het normale leven en opgroeien en vereisen geen medische behandeling. Door te normaliseren en het zelfoplossend vermogen te versterken, voorkomen we onnodige instroom in de gespecialiseerde zorg.',
+      'Er wordt in Nederland meer zorg geleverd dan medisch noodzakelijk is — dit geldt zowel in de curatieve zorg als in de GGZ. Door meer evidence-based te behandelen, praktijkvariatie terug te dringen en spiegelinformatie in te zetten, kan het volume omlaag zonder dat de kwaliteit daalt. Transparantie over uitkomsten en variatie drijft verbetering van binnenuit.',
+    bullets: [
+      'Meer evidence-based behandelen: richtlijnen volgen, bewezen effectieve interventies inzetten',
+      'Praktijkvariatie terugdringen: ongewenste variatie in verwijzingen, behandelduur en intensiteit zichtbaar maken',
+      'Transparantie & spiegelinformatie: zorgverleners inzicht geven in hun eigen patronen ten opzichte van collega\'s',
+    ],
   },
   {
     number: 2,
-    title: 'Samen beslissen',
-    subtitle: 'Shared Decision Making',
+    title: 'Vergroten patiëntbetrokkenheid',
+    subtitle: 'Samen beslissen',
     icon: Handshake,
     color: 'from-blue-500 to-indigo-600',
     bgLight: 'bg-blue-50',
     borderColor: 'border-blue-200',
     textColor: 'text-blue-700',
     description:
-      'Arts en patiënt beslissen samen wat de juiste zorg is. Wanneer patiënten eerlijke, volledige informatie krijgen over behandelopties — inclusief niets doen — kiezen velen voor minder intensieve zorg. Dit leidt tot meer passende zorg.',
+      'Wanneer patiënten eerlijke en volledige informatie krijgen over behandelopties — inclusief de optie om niets te doen — kiezen zij vaak voor minder intensieve zorg. Samen beslissen (shared decision making) met keuzehulpen leidt tot zorg die beter past bij de werkelijke behoeften en voorkeuren van de patiënt. Daarnaast speelt het sociale netwerk een cruciale rol bij herstel.',
+    bullets: [
+      'Samen beslissen: arts en patiënt kiezen samen de behandeling, ondersteund door keuzehulpen',
+      'Patiëntvoorkeuren zijn vaak conservatiever: bij volledige informatie kiest men vaker voor minder intensief',
+      'Sociale netwerken betrekken: het netwerk rondom de patiënt activeren als onderdeel van herstel',
+    ],
   },
   {
     number: 3,
-    title: 'Kwaliteitstransparantie',
-    subtitle: 'Quality Transparency',
-    icon: Eye,
+    title: 'Verbeteren organisatorische inrichting',
+    subtitle: 'Zorgorganisatie transformeren',
+    icon: Building2,
     color: 'from-emerald-500 to-teal-600',
     bgLight: 'bg-emerald-50',
     borderColor: 'border-emerald-200',
     textColor: 'text-emerald-700',
     description:
-      'Het transparant maken van kwaliteitsuitkomsten en praktijkvariatie drijft verbetering. Wanneer zorgverleners kunnen zien hoe ze zich verhouden tot collega\'s, leidt intrinsieke motivatie tot betere zorg. Transparantie is de motor van continue verbetering.',
+      'De manier waarop zorg is georganiseerd beïnvloedt het volume direct. Door de organisatorische inrichting te verbeteren op vier gebieden kan zorg efficiënter en effectiever worden geleverd, met minder onnodige verwijzingen en betere uitkomsten.',
+    bullets: [
+      'Integrale diagnostiek: eenmalige, brede diagnostiek in plaats van versnipperde deelonderzoeken',
+      'Integrale begeleiding chronisch zieken: gecoördineerde, langdurige zorg in plaats van herhaalde episodische behandelingen',
+      'Versterking eerste lijn: huisartsen en POH-GGZ beter toerusten zodat minder doorverwijzing naar specialistische zorg nodig is',
+      'Spreiding en concentratie: complexe zorg concentreren op plekken met de juiste expertise, eenvoudige zorg dichtbij huis',
+    ],
   },
 ];
 
 const zhzPillars = [
   {
-    title: 'Normaliseren',
+    title: 'Minder overbehandeling',
     icon: HeartPulse,
     color: 'text-rose-600',
     bgColor: 'bg-rose-50',
     borderColor: 'border-rose-200',
     description:
-      'Niet elk jeugdprobleem vraagt om een GGZ-diagnose. Versterk het zelfoplossend vermogen van jongeren en gezinnen.',
+      'Niet elk jeugdprobleem vraagt om specialistische GGZ. Door evidence-based te werken en praktijkvariatie zichtbaar te maken, verminderen we onnodige instroom en behandelduur. Initiatieven: Kracht van Kort, Brede Intake.',
   },
   {
-    title: 'Samen beslissen',
+    title: 'Jongeren & gezinnen betrekken',
     icon: Handshake,
     color: 'text-blue-600',
     bgColor: 'bg-blue-50',
     borderColor: 'border-blue-200',
     description:
-      'Betrek jongeren en gezinnen bij zorgkeuzes. Brede intake met ervaringsdeskundigen. Zorg afstemmen op werkelijke behoeften.',
+      'Samen beslissen met jongeren en ouders over de juiste zorg. Keuzehulpen inzetten, het sociale netwerk activeren en overbruggingszorg bieden. Initiatieven: Overbruggingszorg, Gezinsgerichte Aanpak.',
   },
   {
-    title: 'Transparantie',
-    icon: Eye,
+    title: 'Organisatie verbeteren',
+    icon: Building2,
     color: 'text-emerald-600',
     bgColor: 'bg-emerald-50',
     borderColor: 'border-emerald-200',
     description:
-      'Deel praktijkvariatiedata tussen aanbieders. Creëer inzicht in verwijspatronen, behandelduur en uitkomsten.',
+      'Integrale diagnostiek, versterking eerste lijn (huisarts/POH-GGZ), concentratie van complexe zorg en gecoördineerde begeleiding. Initiatief: Integraal Zorgaanbod.',
   },
 ];
 
@@ -337,6 +353,16 @@ export default function KwaliteitAlsMedicijnPage() {
                     <p className={`mt-4 text-sm leading-relaxed ${pillar.textColor}`}>
                       {pillar.description}
                     </p>
+                    {pillar.bullets && (
+                      <ul className="mt-3 space-y-1.5">
+                        {pillar.bullets.map((bullet, i) => (
+                          <li key={i} className="flex items-start gap-1.5 text-xs leading-relaxed text-gray-600">
+                            <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-gray-400" />
+                            <span>{bullet}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 </div>
               );
