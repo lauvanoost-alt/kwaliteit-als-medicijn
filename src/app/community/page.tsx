@@ -1,29 +1,32 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
+'use client';
+
+import { useState } from 'react';
 import {
   Mail,
   User,
   MessageSquare,
   ThumbsUp,
   Clock,
-  ChevronRight,
+  ChevronDown,
+  ChevronUp,
   Users,
-  Search,
   Tag,
-  ArrowRight,
   MessageCircle,
   Eye,
   Pin,
+  Sparkles,
+  Building2,
+  Briefcase,
+  Heart,
+  Send,
 } from 'lucide-react';
 import { communityMembers } from '@/data/community';
 import { themes } from '@/data/themes';
 import { Tag as TagComponent } from '@/components/ui/Tag';
 
-export const metadata: Metadata = {
-  title: 'Community & Forum',
-  description:
-    'Stel vragen, deel ervaringen en vind collega-professionals. Het forum voor jeugdzorg innovatie in Nederland.',
-};
+/* ------------------------------------------------------------------ */
+/*  Data                                                               */
+/* ------------------------------------------------------------------ */
 
 const forumTopics = [
   {
@@ -51,6 +54,36 @@ const forumTopics = [
         tekst: 'Vanuit de gemeente zien wij hier veel potentie in. Belangrijk aandachtspunt is wel de contractering: zorg dat het overbruggingsproduct goed in het productenboek past. Wij liepen daar aanvankelijk tegenaan.',
         likes: 3,
       },
+      {
+        auteur: { naam: 'Demo-gebruiker: Sophie J.', organisatie: 'De Fjord', isDemo: true },
+        datum: '14 feb 2026',
+        tekst: 'Bij ons draaien we nu een pilot met een online psycho-educatiemodule van 6 weken. De feedback van gezinnen is overwegend positief: ze voelen zich al gehoord en hebben al handvatten voordat de behandeling start.',
+        likes: 7,
+      },
+      {
+        auteur: { naam: 'Demo-gebruiker: Peter S.', organisatie: 'Compass GGZ', isDemo: true },
+        datum: '15 feb 2026',
+        tekst: 'Wij combineren overbruggingszorg met groepsbegeleiding. Twee vliegen in een klap: jongeren wachten niet passief en ze leren al van elkaars ervaringen. Gemiddeld 4 sessies voordat de individuele behandeling start.',
+        likes: 4,
+      },
+      {
+        auteur: { naam: 'Demo-gebruiker: Fatima K.', organisatie: 'Praktijk Herstelweg', isDemo: true },
+        datum: '15 feb 2026',
+        tekst: 'Belangrijk om ook de ouders mee te nemen in het overbruggingstraject. Wij bieden een aparte oudermodule aan met praktische opvoedtips. Dat verlaagt de druk op het gezin en voorkomt escalatie tijdens de wachtperiode.',
+        likes: 6,
+      },
+      {
+        auteur: { naam: 'Demo-gebruiker: Joris M.', organisatie: 'Huisartsenpraktijk Centraal', isDemo: true },
+        datum: '15 feb 2026',
+        tekst: 'Als huisarts merk ik dat overbruggingszorg het aantal "tussentijdse" consulten flink vermindert. Gezinnen voelen zich minder verloren en bellen minder vaak met de vraag "wanneer begint het nu eindelijk?".',
+        likes: 3,
+      },
+      {
+        auteur: { naam: 'Demo-gebruiker: Marieke V.', organisatie: 'GGZ-instelling regio Utrecht', isDemo: true },
+        datum: '16 feb 2026',
+        tekst: 'Bedankt voor alle reacties! Heel waardevol. We gaan de pilot vormgeven met een combinatie van e-modules en groepsbijeenkomsten. De tip over de oudermodule nemen we zeker mee. Ik hou jullie op de hoogte van de resultaten.',
+        likes: 8,
+      },
     ],
   },
   {
@@ -59,7 +92,7 @@ const forumTopics = [
     auteur: { naam: 'Demo-gebruiker: Peter S.', organisatie: 'GGZ-aanbieder Drechtsteden', isDemo: true },
     categorie: 'Werkwijzen',
     datum: '12 feb 2026',
-    reacties: 4,
+    reacties: 6,
     views: 31,
     pinned: false,
     laatsteReactie: 'Demo-gebruiker: Marieke V.',
@@ -69,8 +102,38 @@ const forumTopics = [
       {
         auteur: { naam: 'Demo-gebruiker: Sophie J.', organisatie: 'GGZ-instelling ZHZ', isDemo: true },
         datum: '13 feb 2026',
-        tekst: 'Bij ons heeft het geholpen om in het MDO (multidisciplinair overleg) structureel een "cliënt review" te doen: voor elke cliënt boven de 9 maanden behandelduur bespreken we of afronding passend is. Dit vergt discipline maar werkt goed.',
+        tekst: 'Bij ons heeft het geholpen om in het MDO (multidisciplinair overleg) structureel een "client review" te doen: voor elke client boven de 9 maanden behandelduur bespreken we of afronding passend is. Dit vergt discipline maar werkt goed.',
         likes: 8,
+      },
+      {
+        auteur: { naam: 'Demo-gebruiker: Ahmed H.', organisatie: 'Jeugdzorginstelling ZHZ', isDemo: true },
+        datum: '13 feb 2026',
+        tekst: 'Spiegelinformatie is cruciaal. Wij delen maandelijks een dashboard met per behandelaar de gemiddelde behandelduur, uitstroom en ROM-scores. Niet om af te rekenen, maar om bewustwording te creeren.',
+        likes: 5,
+      },
+      {
+        auteur: { naam: 'Demo-gebruiker: Linda D.', organisatie: 'Gemeente Dordrecht', isDemo: true },
+        datum: '13 feb 2026',
+        tekst: 'Vanuit de gemeente stimuleren we dit door in de contractering een "bonus" op te nemen voor aanbieders die aantoonbaar korter behandelen zonder kwaliteitsverlies. Dat geeft een financiele prikkel.',
+        likes: 4,
+      },
+      {
+        auteur: { naam: 'Demo-gebruiker: Marieke V.', organisatie: 'GGZ-instelling regio Utrecht', isDemo: true },
+        datum: '14 feb 2026',
+        tekst: 'Wij hebben een "Kracht van Kort-ambassadeur" per team aangesteld. Die houdt het onderwerp levend in de waan van de dag en organiseert intervisie rond casuistiek waar de behandeling langer duurt dan gepland.',
+        likes: 6,
+      },
+      {
+        auteur: { naam: 'Demo-gebruiker: Fatima K.', organisatie: 'Praktijk Herstelweg', isDemo: true },
+        datum: '14 feb 2026',
+        tekst: 'Een concreet hulpmiddel: wij werken met een "behandelcontract" waarin samen met de client het verwachte aantal sessies wordt afgesproken. Dat helpt zowel de behandelaar als de client om gefocust te blijven.',
+        likes: 3,
+      },
+      {
+        auteur: { naam: 'Demo-gebruiker: Peter S.', organisatie: 'GGZ-aanbieder Drechtsteden', isDemo: true },
+        datum: '15 feb 2026',
+        tekst: 'Geweldige suggesties, dank jullie wel! Het dashboard-idee en de ambassadeursrol gaan we zeker oppakken. We plannen een implementatiesessie volgende maand.',
+        likes: 2,
       },
     ],
   },
@@ -80,7 +143,7 @@ const forumTopics = [
     auteur: { naam: 'Demo-gebruiker: Linda D.', organisatie: 'Gemeente Dordrecht', isDemo: true },
     categorie: 'Samenwerking',
     datum: '10 feb 2026',
-    reacties: 3,
+    reacties: 5,
     views: 28,
     pinned: false,
     laatsteReactie: 'Demo-gebruiker: Ahmed H.',
@@ -93,6 +156,30 @@ const forumTopics = [
         tekst: 'Wij hebben een "verwijskaart" gemaakt voor huisartsen met per type problematiek de aanbevolen route. Korte, visuele kaart die ze in hun spreekkamer kunnen ophangen. Is goed ontvangen bij de huisartsengroep in onze regio.',
         likes: 6,
       },
+      {
+        auteur: { naam: 'Demo-gebruiker: Sophie J.', organisatie: 'De Fjord', isDemo: true },
+        datum: '11 feb 2026',
+        tekst: 'Wij hebben een maandelijks consultatie-uur ingericht waar huisartsen laagdrempelig kunnen bellen met vragen over jeugd-GGZ. Kost ons 4 uur per maand maar scheelt enorm veel onnodige verwijzingen.',
+        likes: 7,
+      },
+      {
+        auteur: { naam: 'Demo-gebruiker: Ahmed H.', organisatie: 'Jeugdzorginstelling ZHZ', isDemo: true },
+        datum: '12 feb 2026',
+        tekst: 'Tip: sluit aan bij de bestaande scholingsbijeenkomsten van huisartsengroepen (HAGRO). Dan hoef je geen apart moment te organiseren en bereik je ze in hun vertrouwde setting.',
+        likes: 5,
+      },
+      {
+        auteur: { naam: 'Demo-gebruiker: Joris M.', organisatie: 'Huisartsenpraktijk Centraal', isDemo: true },
+        datum: '12 feb 2026',
+        tekst: 'Als huisarts waardeer ik het enorm als GGZ-instellingen proactief contact zoeken. Een kort telefoontje na een verwijzing maakt al veel verschil. De verwijskaart-suggestie is ook top, dat gebruiken we al voor somatiek.',
+        likes: 4,
+      },
+      {
+        auteur: { naam: 'Demo-gebruiker: Linda D.', organisatie: 'Gemeente Dordrecht', isDemo: true },
+        datum: '13 feb 2026',
+        tekst: 'Super input allemaal! We gaan de verwijskaart ontwikkelen samen met de huisartsenkoepel en het consultatie-uur voorstellen bij onze gecontracteerde aanbieders. Dit is precies de samenwerking die we zoeken.',
+        likes: 3,
+      },
     ],
   },
   {
@@ -101,7 +188,7 @@ const forumTopics = [
     auteur: { naam: 'Demo-gebruiker: Sophie J.', organisatie: 'Parnassia-achtig model', isDemo: true },
     categorie: 'Initiatieven',
     datum: '8 feb 2026',
-    reacties: 5,
+    reacties: 6,
     views: 37,
     pinned: false,
     laatsteReactie: 'Demo-gebruiker: Marieke V.',
@@ -114,6 +201,36 @@ const forumTopics = [
         tekst: 'Bij Mentiek (GGZ 18+) doen ze dit al: een verkennend gesprek met een GGZ-professional, welzijnsmedewerker EN ervaringsdeskundige. De ervaringsdeskundigen zijn opgeleid via een geaccrediteerd programma. Het helpt enorm bij het normaliseren van de hulpvraag.',
         likes: 4,
       },
+      {
+        auteur: { naam: 'Demo-gebruiker: Marieke V.', organisatie: 'GGZ-instelling regio Utrecht', isDemo: true },
+        datum: '9 feb 2026',
+        tekst: 'Wij werken sinds kort met ervaringsdeskundigen in de intake. Belangrijk leerpunt: investeer in goede intervisie voor de ervaringsdeskundigen. Ze komen soms dicht bij hun eigen verhaal en dat vraagt begeleiding.',
+        likes: 6,
+      },
+      {
+        auteur: { naam: 'Demo-gebruiker: Peter S.', organisatie: 'Compass GGZ', isDemo: true },
+        datum: '10 feb 2026',
+        tekst: 'De meerwaarde zit hem vooral in het eerste contact. Jongeren en ouders voelen zich sneller begrepen als iemand "het zelf heeft meegemaakt". Dat verlaagt de drempel en verhoogt de motivatie voor behandeling.',
+        likes: 5,
+      },
+      {
+        auteur: { naam: 'Demo-gebruiker: Fatima K.', organisatie: 'Praktijk Herstelweg', isDemo: true },
+        datum: '10 feb 2026',
+        tekst: 'Let op de juridische kant: ervaringsdeskundigen moeten werken binnen de kaders van de Wkkgz. Zorg dat je een goed protocol hebt voor dossiervorming en informatiedeling. We hebben hier een template voor, DM me als je interesse hebt.',
+        likes: 3,
+      },
+      {
+        auteur: { naam: 'Demo-gebruiker: Linda D.', organisatie: 'Gemeente Dordrecht', isDemo: true },
+        datum: '11 feb 2026',
+        tekst: 'Vanuit de gemeente juichen we dit toe. Het past helemaal in de transformatiegedachte. We overwegen om een apart tarief op te nemen in het productenboek voor intakes met ervaringsdeskundigen.',
+        likes: 4,
+      },
+      {
+        auteur: { naam: 'Demo-gebruiker: Sophie J.', organisatie: 'Parnassia-achtig model', isDemo: true },
+        datum: '12 feb 2026',
+        tekst: 'Dank voor alle waardevolle reacties! Het template van Fatima ga ik zeker opvragen. We starten volgende maand met een pilot van 3 maanden en evalueren dan de ervaringen.',
+        likes: 2,
+      },
     ],
   },
   {
@@ -122,7 +239,7 @@ const forumTopics = [
     auteur: { naam: 'Demo-gebruiker: Ahmed H.', organisatie: 'Jeugdzorginstelling ZHZ', isDemo: true },
     categorie: 'Kennisdeling',
     datum: '5 feb 2026',
-    reacties: 2,
+    reacties: 5,
     views: 19,
     pinned: false,
     laatsteReactie: 'Demo-gebruiker: Peter S.',
@@ -135,6 +252,30 @@ const forumTopics = [
         tekst: 'In Veendam wordt dit ook gedaan via het Jeugdexpertise Punt (JEP). Daar worden groepen samengesteld op basis van leeftijd en problematiek. Het mooie is dat jongeren van elkaar leren en het minder "medisch" voelt.',
         likes: 3,
       },
+      {
+        auteur: { naam: 'Demo-gebruiker: Sophie J.', organisatie: 'De Fjord', isDemo: true },
+        datum: '6 feb 2026',
+        tekst: 'Wij draaien groepen van maximaal 6 jongeren met vergelijkbare thematiek. De groepsdynamiek is krachtig: jongeren herkennen zich in elkaars verhaal en durven meer te delen dan in individuele sessies.',
+        likes: 5,
+      },
+      {
+        auteur: { naam: 'Demo-gebruiker: Marieke V.', organisatie: 'GGZ-instelling regio Utrecht', isDemo: true },
+        datum: '7 feb 2026',
+        tekst: 'Praktische tip: begin met een "kennismakingsbijeenkomst" voordat de groep echt start. Dan kunnen jongeren alvast wennen aan de groepssetting en kun je zien of de samenstelling klopt. Scheelt dropouts later.',
+        likes: 4,
+      },
+      {
+        auteur: { naam: 'Demo-gebruiker: Fatima K.', organisatie: 'Praktijk Herstelweg', isDemo: true },
+        datum: '7 feb 2026',
+        tekst: 'Wij combineren groepsbegeleiding met creatieve therapie. Jongeren maken samen een podcast of video over hun ervaringen. Het geeft ze een stem en de output helpt weer bij het normaliseren voor andere jongeren.',
+        likes: 6,
+      },
+      {
+        auteur: { naam: 'Demo-gebruiker: Peter S.', organisatie: 'Compass GGZ', isDemo: true },
+        datum: '8 feb 2026',
+        tekst: 'Kosteneffectiviteit is ook een argument richting financiers: groepsbegeleiding kost per jongere significant minder dan individueel, terwijl de uitkomsten vergelijkbaar of soms zelfs beter zijn. Win-win.',
+        likes: 4,
+      },
     ],
   },
 ];
@@ -146,7 +287,20 @@ const categorieKleuren: Record<string, string> = {
   Kennisdeling: 'bg-violet-100 text-violet-700',
 };
 
+/* ------------------------------------------------------------------ */
+/*  Component                                                          */
+/* ------------------------------------------------------------------ */
+
 export default function CommunityPage() {
+  const [expandedTopics, setExpandedTopics] = useState<Record<number, boolean>>({});
+  const [ctaSubmitted, setCtaSubmitted] = useState(false);
+
+  const toggleTopic = (id: number) => {
+    setExpandedTopics((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const PREVIEW_COUNT = 2;
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       {/* Header */}
@@ -164,8 +318,150 @@ export default function CommunityPage() {
         </button>
       </div>
 
+      {/* ============================================================ */}
+      {/*  "Doe Mee" CTA Section                                       */}
+      {/* ============================================================ */}
+      <div className="mt-8 relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 via-primary-700 to-sky-800 p-8 sm:p-10 shadow-xl">
+        {/* Decorative background elements */}
+        <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/5" />
+        <div className="pointer-events-none absolute -left-10 -bottom-10 h-48 w-48 rounded-full bg-white/5" />
+        <div className="pointer-events-none absolute right-1/3 bottom-0 h-32 w-32 rounded-full bg-white/[0.03]" />
+
+        <div className="relative grid gap-8 lg:grid-cols-2 lg:gap-12 items-center">
+          {/* Left: copy */}
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white/90 backdrop-blur-sm">
+              <Sparkles className="h-4 w-4" />
+              Sluit je aan bij de beweging
+            </div>
+            <h2 className="mt-4 text-2xl font-bold text-white sm:text-3xl leading-tight">
+              Doe Mee &mdash; Samen Volumes Reduceren
+            </h2>
+            <p className="mt-3 text-base text-white/80 leading-relaxed max-w-lg">
+              Enthousiast? Meld je aan om je bij deze beweging aan te sluiten en samen volumes te
+              reduceren. Verbind je met andere professionals, deel kennis, en draag bij aan een
+              toekomstbestendige jeugdzorg in Nederland.
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:gap-6 text-sm text-white/70">
+              <span className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-white/50" />
+                <span><strong className="text-white">50+</strong> professionals aangesloten</span>
+              </span>
+              <span className="flex items-center gap-2">
+                <Building2 className="h-4 w-4 text-white/50" />
+                <span><strong className="text-white">15</strong> organisaties</span>
+              </span>
+              <span className="flex items-center gap-2">
+                <Heart className="h-4 w-4 text-white/50" />
+                <span><strong className="text-white">5</strong> regio&apos;s actief</span>
+              </span>
+            </div>
+          </div>
+
+          {/* Right: signup form */}
+          <div className="rounded-xl bg-white/10 backdrop-blur-md border border-white/20 p-6 shadow-lg">
+            {!ctaSubmitted ? (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setCtaSubmitted(true);
+                }}
+              >
+                <h3 className="text-lg font-semibold text-white mb-4">Aanmelden</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label htmlFor="cta-naam" className="block text-xs font-medium text-white/70 mb-1">
+                      Naam
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                      <input
+                        id="cta-naam"
+                        type="text"
+                        placeholder="Bijv. Jan de Vries"
+                        className="w-full rounded-lg bg-white/10 border border-white/20 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="cta-email" className="block text-xs font-medium text-white/70 mb-1">
+                      E-mailadres
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                      <input
+                        id="cta-email"
+                        type="email"
+                        placeholder="jan@organisatie.nl"
+                        className="w-full rounded-lg bg-white/10 border border-white/20 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="cta-org" className="block text-xs font-medium text-white/70 mb-1">
+                      Organisatie
+                    </label>
+                    <div className="relative">
+                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                      <input
+                        id="cta-org"
+                        type="text"
+                        placeholder="Bijv. GGZ Drechtsteden"
+                        className="w-full rounded-lg bg-white/10 border border-white/20 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="cta-rol" className="block text-xs font-medium text-white/70 mb-1">
+                      Rol / Functie
+                    </label>
+                    <div className="relative">
+                      <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                      <input
+                        id="cta-rol"
+                        type="text"
+                        placeholder="Bijv. GZ-psycholoog, Beleidsadviseur"
+                        className="w-full rounded-lg bg-white/10 border border-white/20 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  className="mt-5 w-full inline-flex items-center justify-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-bold text-primary-700 shadow-lg hover:bg-white/90 transition"
+                >
+                  <Send className="h-4 w-4" />
+                  Sluit je aan
+                </button>
+                <p className="mt-3 text-center text-xs text-white/50">
+                  Dit is een demo-formulier. Geen gegevens worden opgeslagen.
+                </p>
+              </form>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-400/20 mb-4">
+                  <Sparkles className="h-7 w-7 text-green-300" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Welkom bij de beweging!</h3>
+                <p className="mt-2 text-sm text-white/70 max-w-xs">
+                  Bedankt voor je interesse. In de definitieve versie ontvang je een bevestiging per
+                  e-mail met volgende stappen.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setCtaSubmitted(false)}
+                  className="mt-4 text-xs text-white/50 underline hover:text-white/70 transition"
+                >
+                  Opnieuw invullen
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Demo notice */}
-      <div className="mt-6 rounded-xl bg-amber-50 border border-amber-200 p-4">
+      <div className="mt-8 rounded-xl bg-amber-50 border border-amber-200 p-4">
         <p className="text-sm text-amber-800">
           <strong>Let op:</strong> Dit forum bevat momenteel demonstratie-inhoud met fictieve gebruikers.
           Alle namen en berichten zijn ter illustratie van de beoogde functionaliteit. In de definitieve versie
@@ -178,8 +474,8 @@ export default function CommunityPage() {
         {[
           { label: 'Onderwerpen', value: forumTopics.length, icon: MessageSquare },
           { label: 'Reacties totaal', value: forumTopics.reduce((sum, t) => sum + t.reacties, 0), icon: MessageCircle },
-          { label: 'Categorieën', value: Object.keys(categorieKleuren).length, icon: Tag },
-          { label: 'Demo-deelnemers', value: 5, icon: Users },
+          { label: 'Categorieen', value: Object.keys(categorieKleuren).length, icon: Tag },
+          { label: 'Demo-deelnemers', value: 7, icon: Users },
         ].map((stat) => (
           <div key={stat.label} className="rounded-xl bg-surface-50 border border-surface-200 p-4 text-center">
             <stat.icon className="mx-auto h-5 w-5 text-primary-500" />
@@ -189,7 +485,9 @@ export default function CommunityPage() {
         ))}
       </div>
 
-      {/* Forum topics */}
+      {/* ============================================================ */}
+      {/*  Forum topics                                                 */}
+      {/* ============================================================ */}
       <div className="mt-10">
         <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
           <MessageSquare className="h-5 w-5 text-primary-600" />
@@ -197,82 +495,124 @@ export default function CommunityPage() {
         </h2>
 
         <div className="mt-4 space-y-4">
-          {forumTopics.map((topic) => (
-            <div
-              key={topic.id}
-              className="rounded-xl border border-surface-200 bg-white hover:border-primary-200 transition-colors"
-            >
-              {/* Topic header */}
-              <div className="p-5">
-                <div className="flex items-start gap-4">
-                  <div className="hidden sm:flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-100 text-primary-600">
-                    <User className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {topic.pinned && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-primary-100 px-2 py-0.5 text-xs font-semibold text-primary-700">
-                          <Pin className="h-3 w-3" /> Vastgezet
-                        </span>
-                      )}
-                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${categorieKleuren[topic.categorie] || 'bg-gray-100 text-gray-700'}`}>
-                        {topic.categorie}
-                      </span>
-                    </div>
-                    <h3 className="mt-1 text-base font-semibold text-foreground">{topic.titel}</h3>
-                    <p className="mt-1 text-sm text-gray-500 line-clamp-2">{topic.preview}</p>
-                    <div className="mt-2 flex items-center gap-4 text-xs text-gray-400">
-                      <span>{topic.auteur.naam}</span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" /> {topic.datum}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MessageCircle className="h-3 w-3" /> {topic.reacties} reacties
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Eye className="h-3 w-3" /> {topic.views} views
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          {forumTopics.map((topic) => {
+            const isExpanded = !!expandedTopics[topic.id];
+            const visibleAntwoorden = isExpanded
+              ? topic.antwoorden
+              : topic.antwoorden.slice(0, PREVIEW_COUNT);
+            const hasMore = topic.antwoorden.length > PREVIEW_COUNT;
 
-              {/* Answers preview */}
-              {topic.antwoorden.length > 0 && (
-                <div className="border-t border-surface-100 bg-surface-50/50 p-5 space-y-4 rounded-b-xl">
-                  {topic.antwoorden.map((antwoord, idx) => (
-                    <div key={idx} className="flex items-start gap-3">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-200 text-gray-500">
-                        <User className="h-4 w-4" />
+            return (
+              <div
+                key={topic.id}
+                className="rounded-xl border border-surface-200 bg-white hover:border-primary-200 transition-colors"
+              >
+                {/* Topic header - clickable */}
+                <button
+                  type="button"
+                  onClick={() => toggleTopic(topic.id)}
+                  className="w-full text-left p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-inset rounded-t-xl"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="hidden sm:flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-100 text-primary-600">
+                      <User className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {topic.pinned && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-primary-100 px-2 py-0.5 text-xs font-semibold text-primary-700">
+                            <Pin className="h-3 w-3" /> Vastgezet
+                          </span>
+                        )}
+                        <span
+                          className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${categorieKleuren[topic.categorie] || 'bg-gray-100 text-gray-700'}`}
+                        >
+                          {topic.categorie}
+                        </span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 text-xs text-gray-400">
-                          <span className="font-medium text-gray-600">{antwoord.auteur.naam}</span>
-                          <span>&middot;</span>
-                          <span>{antwoord.auteur.organisatie}</span>
-                          <span>&middot;</span>
-                          <span>{antwoord.datum}</span>
-                        </div>
-                        <p className="mt-1 text-sm text-gray-600 leading-relaxed">{antwoord.tekst}</p>
-                        <div className="mt-1 flex items-center gap-1 text-xs text-gray-400">
-                          <ThumbsUp className="h-3 w-3" /> {antwoord.likes}
-                        </div>
+                      <h3 className="mt-1 text-base font-semibold text-foreground group-hover:text-primary-700 flex items-center gap-2">
+                        {topic.titel}
+                        {isExpanded ? (
+                          <ChevronUp className="h-4 w-4 shrink-0 text-primary-500" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 shrink-0 text-gray-400" />
+                        )}
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-500 line-clamp-2">{topic.preview}</p>
+                      <div className="mt-2 flex items-center gap-4 text-xs text-gray-400">
+                        <span>{topic.auteur.naam}</span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" /> {topic.datum}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MessageCircle className="h-3 w-3" /> {topic.antwoorden.length} reacties
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Eye className="h-3 w-3" /> {topic.views} views
+                        </span>
                       </div>
                     </div>
-                  ))}
-                  {topic.reacties > topic.antwoorden.length && (
-                    <p className="text-xs text-primary-600 font-medium cursor-pointer hover:underline">
-                      Bekijk alle {topic.reacties} reacties &rarr;
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
+                  </div>
+                </button>
+
+                {/* Answers */}
+                {visibleAntwoorden.length > 0 && (
+                  <div className="border-t border-surface-100 bg-surface-50/50 p-5 space-y-4 rounded-b-xl">
+                    {visibleAntwoorden.map((antwoord, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-start gap-3 animate-in fade-in"
+                      >
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-200 text-gray-500">
+                          <User className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 text-xs text-gray-400">
+                            <span className="font-medium text-gray-600">{antwoord.auteur.naam}</span>
+                            <span>&middot;</span>
+                            <span>{antwoord.auteur.organisatie}</span>
+                            <span>&middot;</span>
+                            <span>{antwoord.datum}</span>
+                          </div>
+                          <p className="mt-1 text-sm text-gray-600 leading-relaxed">{antwoord.tekst}</p>
+                          <div className="mt-1 flex items-center gap-1 text-xs text-gray-400">
+                            <ThumbsUp className="h-3 w-3" /> {antwoord.likes}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Toggle button */}
+                    {hasMore && (
+                      <button
+                        type="button"
+                        onClick={() => toggleTopic(topic.id)}
+                        className="inline-flex items-center gap-1.5 text-xs text-primary-600 font-medium hover:text-primary-700 hover:underline transition-colors cursor-pointer pt-1"
+                      >
+                        {isExpanded ? (
+                          <>
+                            <ChevronUp className="h-3.5 w-3.5" />
+                            Toon minder reacties
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="h-3.5 w-3.5" />
+                            Bekijk alle {topic.antwoorden.length} reacties
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Professionals directory */}
+      {/* ============================================================ */}
+      {/*  Professionals directory                                      */}
+      {/* ============================================================ */}
       <div id="professionals" className="mt-16 scroll-mt-20">
         <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
           <Users className="h-5 w-5 text-primary-600" />

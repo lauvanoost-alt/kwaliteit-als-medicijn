@@ -7,10 +7,14 @@ export const siteConfig = {
     'Van elkaar leren, informatie delen, initiatieven die werken opschalen — en met elkaar in contact komen. Dit platform brengt zorgaanbieders, gemeenten en professionals samen rondom het Kwaliteit als Medicijn-gedachtegoed voor de jeugdzorg.',
   navigation: [
     { label: 'Home', href: '/' },
+    { label: 'Dashboard', href: '/dashboard' },
+    { label: 'Initiatieven', href: '/initiatieven' },
+    { label: 'Impact Simulator', href: '/impact-simulator' },
+    { label: 'Gemeentekaart', href: '/gemeentekaart' },
     { label: 'Kwaliteit als Medicijn', href: '/kwaliteit-als-medicijn' },
-    { label: 'Initiatieven', href: '/#initiatieven' },
     { label: 'Community', href: '/community' },
+    { label: 'Blog', href: '/blog' },
+    { label: 'Quiz', href: '/quiz' },
     { label: 'Organisaties', href: '/organisaties' },
-    { label: 'Over ons', href: '/over-ons' },
   ],
 } as const;

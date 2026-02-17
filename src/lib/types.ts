@@ -70,15 +70,32 @@ export interface Project {
   featured: boolean;
 }
 
+export interface KopgroepProfiel {
+  aantalClienten?: string;
+  aantalMedewerkers?: string;
+  aantalVrijwilligers?: string;
+  aantalLocaties?: string;
+  percentageJeugdZHZ?: string;
+  identiteit?: string;
+  focusGebieden: string[];
+  zorgaanbod: string[];
+  wachttijden?: string;
+  speciaalProgramma?: string[];
+  samenwerkingen?: string[];
+  kamInitiatief?: string;
+}
+
 export interface Organization {
   slug: string;
   naam: string;
-  type: 'ggz-instelling' | 'gemeente' | 'huisartsenpraktijk' | 'onderwijs' | 'overig';
+  type: 'ggz-instelling' | 'gemeente' | 'huisartsenpraktijk' | 'onderwijs' | 'jeugdzorg-aanbieder' | 'overig';
   beschrijving: string;
   website?: string;
   regio: string;
+  isKopgroep: boolean;
   projectSlugs: string[];
   contactPersonen: string[];
+  kopgroepProfiel?: KopgroepProfiel;
 }
 
 export interface KnowledgeItem {
