@@ -9,6 +9,7 @@ export const siteConfig = {
     { label: 'Home', href: '/' },
     { label: 'Aanpak', href: '/kwaliteit-als-medicijn' },
     { label: 'Impact', href: '/dashboard' },
+    { label: 'Simulator', href: '/impact-simulator' },
     { label: 'Kennisbank', href: '/kennisbank' },
     { label: 'Doe Mee', href: '/community' },
   ],

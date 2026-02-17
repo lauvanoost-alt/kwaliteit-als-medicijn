@@ -23,9 +23,6 @@ import {
   ArrowRightLeft,
   FileCheck2,
   Info,
-  Lock,
-  Eye,
-  EyeOff,
 } from 'lucide-react';
 
 /* ------------------------------------------------------------------ */
@@ -174,92 +171,9 @@ function Tooltip({ children, text }: { children: React.ReactNode; text: string }
 /*  MAIN PAGE                                                          */
 /* ------------------------------------------------------------------ */
 
-const DASHBOARD_PASSWORD = 'kopgroep2026';
-
-function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === DASHBOARD_PASSWORD) {
-      onUnlock();
-    } else {
-      setError(true);
-      setTimeout(() => setError(false), 2000);
-    }
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-100 text-indigo-600 mb-4">
-            <Lock size={28} />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900">Kopgroep Dashboard</h1>
-          <p className="mt-2 text-sm text-gray-500 leading-relaxed">
-            Dit dashboard is alleen toegankelijk voor kopgroep-deelnemers.
-            Voer het wachtwoord in dat je van de projectleider hebt ontvangen.
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="rounded-2xl bg-white shadow-lg border border-gray-100 p-6">
-          <label htmlFor="dashboard-password" className="block text-sm font-medium text-gray-700 mb-2">
-            Wachtwoord
-          </label>
-          <div className="relative">
-            <input
-              id="dashboard-password"
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Voer wachtwoord in..."
-              className={`w-full rounded-lg border px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 transition-colors ${
-                error
-                  ? 'border-red-300 focus:ring-red-200 bg-red-50'
-                  : 'border-gray-200 focus:ring-indigo-200 bg-white'
-              }`}
-              autoFocus
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
-
-          {error && (
-            <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-              Onjuist wachtwoord. Probeer het opnieuw.
-            </p>
-          )}
-
-          <button
-            type="submit"
-            className="mt-4 w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
-          >
-            Open Dashboard
-          </button>
-
-          <div className="mt-4 rounded-lg bg-amber-50 border border-amber-200 p-3">
-            <p className="text-xs text-amber-700 leading-relaxed">
-              <strong>Demo:</strong> Het wachtwoord is <code className="bg-amber-100 px-1.5 py-0.5 rounded text-amber-800 font-mono">{DASHBOARD_PASSWORD}</code>.
-              In de definitieve versie krijgen alleen kopgroep-deelnemers toegang.
-            </p>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
-  const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
@@ -276,10 +190,6 @@ export default function DashboardPage() {
   };
 
   if (!mounted) return null;
-
-  if (!authenticated) {
-    return <PasswordGate onUnlock={() => setAuthenticated(true)} />;
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
