@@ -1,9 +1,9 @@
 1:"$Sreact.fragment"
 2:I[47257,["/kwaliteit-als-medicijn/_next/static/chunks/ff1a16fafef87110.js","/kwaliteit-als-medicijn/_next/static/chunks/d2be314c3ece3fbe.js"],"ClientPageRoot"]
-3:I[52683,["/kwaliteit-als-medicijn/_next/static/chunks/643ebca35116bbdd.js","/kwaliteit-als-medicijn/_next/static/chunks/27015e40df02d9b3.js","/kwaliteit-als-medicijn/_next/static/chunks/90c26891aba75e06.js"],"default"]
+3:I[52683,["/kwaliteit-als-medicijn/_next/static/chunks/da721e65c2f2edd3.js","/kwaliteit-als-medicijn/_next/static/chunks/4eed399f0a5b5136.js","/kwaliteit-als-medicijn/_next/static/chunks/61728afd3525b344.js"],"default"]
 6:I[97367,["/kwaliteit-als-medicijn/_next/static/chunks/ff1a16fafef87110.js","/kwaliteit-als-medicijn/_next/static/chunks/d2be314c3ece3fbe.js"],"OutletBoundary"]
 7:"$Sreact.suspense"
-0:{"buildId":"jLpjeplnKgh8jZciD88Ci","rsc":["$","$1","c",{"children":[["$","$L2",null,{"Component":"$3","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@4","$@5"]}}],[["$","script","script-0",{"src":"/kwaliteit-als-medicijn/_next/static/chunks/27015e40df02d9b3.js","async":true}],["$","script","script-1",{"src":"/kwaliteit-als-medicijn/_next/static/chunks/90c26891aba75e06.js","async":true}]],["$","$L6",null,{"children":["$","$7",null,{"name":"Next.MetadataOutlet","children":"$@8"}]}]]}],"loading":null,"isPartial":false}
+0:{"buildId":"53PxPPyVsFGB7i4DSCXE3","rsc":["$","$1","c",{"children":[["$","$L2",null,{"Component":"$3","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@4","$@5"]}}],[["$","script","script-0",{"src":"/kwaliteit-als-medicijn/_next/static/chunks/4eed399f0a5b5136.js","async":true}],["$","script","script-1",{"src":"/kwaliteit-als-medicijn/_next/static/chunks/61728afd3525b344.js","async":true}]],["$","$L6",null,{"children":["$","$7",null,{"name":"Next.MetadataOutlet","children":"$@8"}]}]]}],"loading":null,"isPartial":false}
 4:{}
 5:{}
 8:null
