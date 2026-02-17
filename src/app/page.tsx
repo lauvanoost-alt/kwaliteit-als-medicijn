@@ -670,7 +670,7 @@ const problemSteps: StoryStep[] = [
   {
     number: '1 op 7',
     label: 'kinderen maakt gebruik van jeugdzorg',
-    description: 'In 2020 was dit nog 1 op de 10. De vraag naar jeugdzorg groeit explosief. Dit kan zo niet langer.',
+    description: 'In 2020 was dit nog 1 op de 12. De vraag naar jeugdzorg groeit explosief. Dit kan zo niet langer.',
     icon: Users,
     color: 'from-rose-500 to-red-500',
     bgGlow: 'bg-rose-500',
