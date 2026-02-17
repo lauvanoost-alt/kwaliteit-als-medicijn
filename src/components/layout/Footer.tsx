@@ -19,7 +19,7 @@ export function Footer() {
           <div>
             <h3 className="text-sm font-semibold text-foreground">Platform</h3>
             <ul className="mt-3 space-y-2">
-              {siteConfig.navigation.map((item) => (
+              {siteConfig.allPages.map((item) => (
                 <li key={item.href}>
                   <Link href={item.href} className="text-sm text-gray-500 hover:text-primary-600">
                     {item.label}

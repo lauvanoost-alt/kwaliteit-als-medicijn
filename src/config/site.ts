@@ -7,6 +7,14 @@ export const siteConfig = {
     'Van elkaar leren, informatie delen, initiatieven die werken opschalen — en met elkaar in contact komen. Dit platform brengt zorgaanbieders, gemeenten en professionals samen rondom het Kwaliteit als Medicijn-gedachtegoed voor de jeugdzorg.',
   navigation: [
     { label: 'Home', href: '/' },
+    { label: 'Aanpak', href: '/kwaliteit-als-medicijn' },
+    { label: 'Impact', href: '/dashboard' },
+    { label: 'Kennisbank', href: '/kennisbank' },
+    { label: 'Doe Mee', href: '/community' },
+  ],
+  // All pages remain accessible via internal links, but only these 5 appear in the main nav
+  allPages: [
+    { label: 'Home', href: '/' },
     { label: 'Dashboard', href: '/dashboard' },
     { label: 'Initiatieven', href: '/initiatieven' },
     { label: 'Impact Simulator', href: '/impact-simulator' },
@@ -16,5 +24,6 @@ export const siteConfig = {
     { label: 'Blog', href: '/blog' },
     { label: 'Quiz', href: '/quiz' },
     { label: 'Organisaties', href: '/organisaties' },
+    { label: 'Kennisbank', href: '/kennisbank' },
   ],
 } as const;
