@@ -236,12 +236,12 @@ export function Header() {
           ))}
 
           {/* CTA button */}
-          <Link
+          <a
             href={siteConfig.navCta.href}
             className="ml-2 rounded-md bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-400 transition-colors"
           >
             {siteConfig.navCta.label}
-          </Link>
+          </a>
         </nav>
 
         {/* Mobile toggle */}
@@ -267,13 +267,13 @@ export function Header() {
           ))}
 
           {/* CTA */}
-          <Link
+          <a
             href={siteConfig.navCta.href}
             onClick={() => setMobileOpen(false)}
             className="mt-2 block rounded-md bg-emerald-500 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-emerald-400 transition-colors"
           >
             {siteConfig.navCta.label}
-          </Link>
+          </a>
         </nav>
       )}
     </header>
