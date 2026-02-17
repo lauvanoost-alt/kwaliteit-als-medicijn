@@ -1134,13 +1134,13 @@ export default function HomePage() {
               <Lightbulb className="h-4 w-4" />
               Test je kennis
             </Link>
-            <Link
-              href="/community"
+            <a
+              href="#doe-mee"
               className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:bg-emerald-400 transition"
             >
               <Heart className="h-4 w-4" />
               Doe mee!
-            </Link>
+            </a>
           </div>
 
           {/* Quick stats */}
