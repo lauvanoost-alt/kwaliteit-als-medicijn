@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Footprints,
 } from 'lucide-react';
+import { CumulativeSavingsChart } from '@/components/CumulativeSavingsChart';
 
 export const metadata: Metadata = {
   title: 'Initiatieven',
@@ -418,8 +419,13 @@ export default function InitiatievenPage() {
           })}
         </div>
 
+        {/* ---- Cumulative savings chart ---- */}
+        <div className="mt-14">
+          <CumulativeSavingsChart />
+        </div>
+
         {/* ---- Summary ---- */}
-        <div className="mt-14 rounded-2xl border border-primary-200 bg-gradient-to-br from-primary-50 to-white p-8 text-center shadow-sm">
+        <div className="mt-8 rounded-2xl border border-primary-200 bg-gradient-to-br from-primary-50 to-white p-8 text-center shadow-sm">
           <h3 className="text-xl font-bold text-primary-800 sm:text-2xl">
             Totale potenti&euml;le besparing
           </h3>
