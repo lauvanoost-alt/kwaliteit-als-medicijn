@@ -610,6 +610,167 @@ export default function KwaliteitAlsMedicijnPage() {
       </section>
 
       {/* ============================================================ */}
+      {/*  OPSCHALING: VAN KOPGROEP NAAR LANDELIJK                      */}
+      {/* ============================================================ */}
+      <section className="mt-16">
+        <div className="flex items-start gap-3">
+          <Eye className="mt-1 h-6 w-6 shrink-0 text-primary-600" />
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">
+              Opschaling: Van Kopgroep naar Landelijk
+            </h2>
+            <p className="mt-1 text-gray-500">
+              Het pad van lokale kopgroep naar landelijke implementatie
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-6 rounded-xl border-l-4 border-primary-500 bg-primary-50/60 p-6 sm:p-8">
+          <p className="text-base leading-relaxed text-gray-700 sm:text-lg">
+            Het Kwaliteit als Medicijn-gedachtegoed is niet beperkt tot de kopgroep. Vanaf segment 4
+            kan worden opgeschaald naar alle segmenten binnen ZHZ, vervolgens tussen regio&apos;s, en
+            uiteindelijk landelijk. De principes &mdash; evidence-based behandelen, samen beslissen,
+            en organisatorische verbetering &mdash; zijn universeel toepasbaar.
+          </p>
+        </div>
+
+        {/* Opschaling flow diagram */}
+        <div className="mt-10 relative">
+          {/* Horizontal connector line (desktop) */}
+          <div className="hidden lg:block absolute top-[72px] left-[12%] right-[12%] h-1 rounded-full overflow-hidden">
+            <div className="h-full w-full bg-gradient-to-r from-emerald-300 via-sky-300 via-violet-300 to-amber-300 opschaling-line-animate" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+            {/* Stage 1: Kopgroep ZHZ */}
+            <div
+              className="opschaling-card flex flex-col items-center text-center"
+              style={{ animationDelay: '0s' }}
+            >
+              <div className="relative flex h-[88px] w-[88px] items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-200">
+                <span className="text-2xl font-extrabold">1</span>
+                <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-400 text-[10px] font-bold text-white ring-2 ring-white">
+                  Nu
+                </span>
+              </div>
+              <h4 className="mt-4 text-lg font-bold text-emerald-800">Kopgroep ZHZ</h4>
+              <p className="mt-1 text-xs font-medium text-emerald-600">Segment 4</p>
+              <div className="mt-3 w-full rounded-xl border-2 border-emerald-200 bg-emerald-50 p-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-center gap-1.5">
+                    <Users className="h-3.5 w-3.5 text-emerald-600" />
+                    <span className="text-sm font-semibold text-emerald-800">8 aanbieders</span>
+                  </div>
+                  <p className="text-xs text-emerald-700">~4.800 SGGZ-jeugdigen</p>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-200 px-2.5 py-0.5 text-xs font-bold text-emerald-800">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Nu actief
+                  </span>
+                </div>
+              </div>
+              {/* Arrow connector (mobile/tablet) */}
+              <div className="lg:hidden mt-4 flex justify-center">
+                <ArrowRight className="h-5 w-5 text-emerald-400 rotate-90 sm:rotate-0" />
+              </div>
+            </div>
+
+            {/* Stage 2: Alle Aanbieders ZHZ */}
+            <div
+              className="opschaling-card flex flex-col items-center text-center"
+              style={{ animationDelay: '0.15s' }}
+            >
+              <div className="relative flex h-[88px] w-[88px] items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 text-white shadow-lg shadow-sky-200">
+                <span className="text-2xl font-extrabold">2</span>
+              </div>
+              <h4 className="mt-4 text-lg font-bold text-sky-800">Alle Aanbieders ZHZ</h4>
+              <p className="mt-1 text-xs font-medium text-sky-600">Intra-regionaal</p>
+              <div className="mt-3 w-full rounded-xl border-2 border-sky-200 bg-sky-50 p-4">
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-sky-800">Volledige opschaling binnen de regio</p>
+                  <p className="text-xs text-sky-700">Alle gecontracteerde aanbieders</p>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-sky-200 px-2.5 py-0.5 text-xs font-bold text-sky-800">
+                    Alle segmenten
+                  </span>
+                </div>
+              </div>
+              <div className="lg:hidden mt-4 flex justify-center">
+                <ArrowRight className="h-5 w-5 text-sky-400 rotate-90 sm:rotate-0" />
+              </div>
+            </div>
+
+            {/* Stage 3: Inter-regionaal */}
+            <div
+              className="opschaling-card flex flex-col items-center text-center"
+              style={{ animationDelay: '0.3s' }}
+            >
+              <div className="relative flex h-[88px] w-[88px] items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 text-white shadow-lg shadow-violet-200">
+                <span className="text-2xl font-extrabold">3</span>
+              </div>
+              <h4 className="mt-4 text-lg font-bold text-violet-800">Inter-regionaal</h4>
+              <p className="mt-1 text-xs font-medium text-violet-600">Tussen regio&apos;s</p>
+              <div className="mt-3 w-full rounded-xl border-2 border-violet-200 bg-violet-50 p-4">
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-violet-800">Uitwisseling met andere regio&apos;s</p>
+                  <p className="text-xs text-violet-700">Shared learning &amp; benchmark</p>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-violet-200 px-2.5 py-0.5 text-xs font-bold text-violet-800">
+                    Lerend netwerk
+                  </span>
+                </div>
+              </div>
+              <div className="lg:hidden mt-4 flex justify-center">
+                <ArrowRight className="h-5 w-5 text-violet-400 rotate-90 sm:rotate-0" />
+              </div>
+            </div>
+
+            {/* Stage 4: Landelijk */}
+            <div
+              className="opschaling-card flex flex-col items-center text-center"
+              style={{ animationDelay: '0.45s' }}
+            >
+              <div className="relative flex h-[88px] w-[88px] items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-200">
+                <span className="text-2xl font-extrabold">4</span>
+              </div>
+              <h4 className="mt-4 text-lg font-bold text-amber-800">Landelijk</h4>
+              <p className="mt-1 text-xs font-medium text-amber-600">Nationale uitrol</p>
+              <div className="mt-3 w-full rounded-xl border-2 border-amber-200 bg-amber-50 p-4">
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-amber-800">~400.000 jeugdigen in GGZ per jaar</p>
+                  <p className="text-xs text-amber-700">Landelijke uitrol KAM-principes</p>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-200 px-2.5 py-0.5 text-xs font-bold text-amber-800">
+                    Ambitie
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop animated arrows between stages */}
+          <div className="hidden lg:flex absolute top-[56px] left-0 right-0 z-20 justify-around px-[20%]">
+            <ArrowRight className="h-6 w-6 text-emerald-400 opschaling-arrow" style={{ animationDelay: '0.6s' }} />
+            <ArrowRight className="h-6 w-6 text-sky-400 opschaling-arrow" style={{ animationDelay: '0.75s' }} />
+            <ArrowRight className="h-6 w-6 text-violet-400 opschaling-arrow" style={{ animationDelay: '0.9s' }} />
+          </div>
+        </div>
+
+        {/* Summary annotation */}
+        <div className="mt-10 rounded-xl bg-gradient-to-r from-emerald-50 via-sky-50 via-violet-50 to-amber-50 p-5 sm:p-6 border border-primary-100">
+          <div className="flex items-start gap-3">
+            <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary-600" />
+            <div>
+              <p className="text-sm leading-relaxed text-gray-700">
+                <strong className="text-foreground">Van 4.800 naar 400.000 jeugdigen:</strong>{' '}
+                De kopgroep in ZHZ fungeert als proeftuin. Succesvolle initiatieven worden eerst binnen
+                de regio opgeschaald (alle aanbieders, alle segmenten), vervolgens gedeeld met andere
+                regio&apos;s via een lerend netwerk, en uiteindelijk landelijk uitgerold. De 44% van de
+                aanbieders in segment 4 die ook in andere segmenten actief zijn, zorgen voor een
+                natuurlijk spill-over effect.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
       {/*  WAAROM DIT ANDERS IS DAN 'GEWOON BEZUINIGEN'                 */}
       {/* ============================================================ */}
       <section className="mt-16">
@@ -757,6 +918,51 @@ export default function KwaliteitAlsMedicijnPage() {
             opacity: 1;
             transform: translateY(0);
           }
+        }
+
+        @keyframes opschalingCardIn {
+          from {
+            opacity: 0;
+            transform: translateY(24px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        @keyframes opschalingArrowPulse {
+          0%, 100% {
+            opacity: 0.4;
+            transform: translateX(0);
+          }
+          50% {
+            opacity: 1;
+            transform: translateX(4px);
+          }
+        }
+
+        @keyframes opschalingLineGrow {
+          from {
+            transform: scaleX(0);
+            transform-origin: left;
+          }
+          to {
+            transform: scaleX(1);
+            transform-origin: left;
+          }
+        }
+
+        .opschaling-card {
+          animation: opschalingCardIn 0.6s ease-out both;
+        }
+
+        .opschaling-arrow {
+          animation: opschalingArrowPulse 2s ease-in-out infinite;
+        }
+
+        .opschaling-line-animate {
+          animation: opschalingLineGrow 1s ease-out 0.3s both;
         }
       `}</style>
     </div>

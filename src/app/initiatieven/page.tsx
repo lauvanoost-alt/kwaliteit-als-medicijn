@@ -10,6 +10,7 @@ import {
   Sparkles,
   BookOpen,
   ExternalLink,
+  Footprints,
 } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -38,6 +39,7 @@ interface Initiatief {
   resultaat: string;
   randvoorwaarden: string;
   businessCase: string;
+  clientPadFase: string;
   literatuur?: LiteratuurRef[];
 }
 
@@ -56,39 +58,48 @@ const initiatieven: Initiatief[] = [
     randvoorwaarden:
       'Ruimte nodig vanuit contractering voor innovatieve producten. Voorkomen dat het traject tot meer volume leidt doordat het als extra aanbod wordt gezien in plaats van als vervanging. Goede afstemming met verwijzers (huisartsen, wijkteams) is essentieel.',
     businessCase:
-      '20% stroomt volledig uit, 40% verschuift naar lichtere BGGZ. De verwachte regionale besparing is ~\u20AC2,0 mln per jaar. Pas de trajectkosten aan in de Impact Simulator om het effect met uw eigen cijfers door te rekenen.',
+      'Overbruggingstrajectkosten bedragen \u20AC1.277 per jeugdige. 20% stroomt volledig uit, 40% verschuift naar lichtere BGGZ (SGGZ-kosten: \u20AC3.800, BGGZ-kosten: \u20AC1.300 per jeugdige). De verwachte regionale netto besparing is ~\u20AC2,0 mln per jaar. Gebruik de Impact Simulator om het effect met uw eigen cijfers door te rekenen.',
+    clientPadFase: 'Tussen verwijzing en intake (wachtlijst)',
     literatuur: [
       {
         tekst: 'Een ruime meerderheid van zorgprofessionals in de GGZ geeft aan dat overbruggingszorg helpt om klachten niet te laten verergeren (75%), het positieve impact heeft op het functioneren (81%), en een positief effect heeft op de resultaten en duur van de toekomstige behandeling (80% en 75%).',
         bron: 'Alliantie Kwaliteit Geestelijke Gezondheidszorg, 2024',
+        url: 'https://www.akwaggz.nl/',
       },
       {
         tekst: 'Psycho-educatie, ouder- en gezinsondersteuning of kortdurende coaching tijdens de wachtlijst hebben in een kleine studie geleid tot verbeterde mentale gezondheid van jongeren.',
         bron: 'BMJ Mental Health',
+        url: 'https://mentalhealth.bmj.com/',
       },
       {
         tekst: 'POH\u2019s-GGZ geven aan overbruggingszorg als middel te zien om de GGZ te kunnen ontlasten, doordat pati\u00ebnten beter voorbereid zijn op behandeling. Soms werd gezien dat pati\u00ebnten door de overbruggingszorg uiteindelijk geen GGZ-behandeling meer nodig hebben.',
         bron: 'Trimbos/Nivel, 2025',
+        url: 'https://www.trimbos.nl/kennis/overbruggingszorg',
       },
       {
         tekst: 'Door een aanpak waarvan overbruggingszorg onderdeel was, waren wachtlijsten van Gemeente Steenwijkerland binnen vijf weken substantieel afgenomen. Uiteindelijk waren de wachtlijsten voor de basis-GGZ volledig verdwenen en voor de specialistische GGZ teruggebracht naar 8 weken.',
         bron: 'Nivel, 2019',
+        url: 'https://www.nivel.nl/nl/publicatie/wachttijden-en-wachtlijsten',
       },
       {
         tekst: 'Brits onderzoek laat zien dat een stabilisatiegroep voor traumapati\u00ebnten op de wachtlijst leidde tot sterke symptoomreductie en geen verslechtering van depressie/angststoornissen.',
         bron: 'Behavioural and Cognitive Psychotherapy, 2023',
+        url: 'https://doi.org/10.1017/S1352465823000152',
       },
       {
         tekst: 'In Nederland ligt de landelijke participatiegraad (het percentage wachtenden dat deelneemt aan een vorm van overbruggingszorg) op ~40%.',
         bron: 'Trimbos/Nivel, 2025',
+        url: 'https://www.trimbos.nl/kennis/overbruggingszorg',
       },
       {
         tekst: 'Nationaal onderzoek laat zien dat (1) pati\u00ebnten wisselende ervaringen hebben met overbruggingszorg, (2) pati\u00ebnten behoefte hebben aan emotionele steun en hulp bij het navigeren door de zorg, en (3) behoeften van naasten tijdens de wachttijd niet altijd worden gezien.',
         bron: 'Trimbos/Nivel, 2025',
+        url: 'https://www.trimbos.nl/kennis/overbruggingszorg',
       },
       {
         tekst: 'Bij \u00e9\u00e9n deelnemende POH-GGZ boden ze in de huisartsenpraktijk standaard overbruggingszorg aan, maar zijn ze onlangs als zorggroep gestopt met standaard aanbieden. Nu kijken ze per individuele pati\u00ebnt of overbruggingszorg naar verwachting meerwaarde heeft.',
         bron: 'Trimbos/Nivel, 2025',
+        url: 'https://www.trimbos.nl/kennis/overbruggingszorg',
       },
     ],
   },
@@ -106,7 +117,8 @@ const initiatieven: Initiatief[] = [
     randvoorwaarden:
       'Structureel financi\u00EBle ruimte voor vroege inzet van experts bij de intake. Contractueel borgen dat koplopers niet financi\u00EBel benadeeld worden wanneer zij jongeren naar lichtere zorg verwijzen (en dus minder SGGZ-omzet genereren).',
     businessCase:
-      'Bij vroege expertise-inzet verschuift ca. 40% van SGGZ-verwezen jongeren naar BGGZ of wijkteam. De verwachte regionale besparing is ~\u20AC2,5 mln per jaar. Gebruik de Impact Simulator om het effect met uw eigen cijfers door te rekenen.',
+      'Extra intake-kosten bedragen \u20AC250 (2 uur inzet \u00E0 \u20AC125/u). Op basis van documentatie/praktijkervaring in GGZ NHN ligt de reductie in SGGZ-behandelingen tussen ~30-40%; wij gaan uit van de onderkant van deze bandbreedte. We veronderstellen dat deze reductie ook toepasbaar is op de 18- populatie, omdat de brede intake hetzelfde probleem adresseert. De verdeling van deze verschuiving over niet-GGZ ondersteuning en BGGZ is gebaseerd op eigen inschattingen. Ca. 40% verschuift naar BGGZ (\u20AC1.300/traject) of wijkteam. Netto besparing: ~\u20AC2,5 mln per jaar.',
+    clientPadFase: 'Intake & plan van aanpak',
   },
   {
     titel: 'De Kracht van Kort',
@@ -123,6 +135,7 @@ const initiatieven: Initiatief[] = [
       'Transparantie m.b.t. behandelduur en herinstroom is essentieel. Financi\u00EBle incentives verkennen voor aanbieders die aantoonbaar kortere, effectieve trajecten realiseren.',
     businessCase:
       '10-20% kortere behandeltrajecten levert regionaal naar schatting \u20AC1,8 \u2013 \u20AC3,6 mln per jaar op. Gebruik de Impact Simulator om het effect met uw eigen cijfers door te rekenen.',
+    clientPadFase: 'Behandeltraject',
   },
   {
     titel: 'Gezinsgerichte Aanpak',
@@ -139,6 +152,7 @@ const initiatieven: Initiatief[] = [
       'Laagdrempelige afstemming tussen aanbieders die bij hetzelfde gezin betrokken zijn. Inzicht in verwijsgeschiedenis van het hele gezin. Goede communicatie richting huisartsen over de gezinsgerichte aanpak.',
     businessCase:
       'In ontwikkeling. Verwachte impact: minder herverwijzingen en minder parallelle trajecten binnen gezinnen. Potentieel \u20AC0,5 \u2013 1,0 mln regionaal per jaar.',
+    clientPadFase: 'Behandeltraject',
   },
   {
     titel: 'Integraal Zorgaanbod met Groepsbegeleiding',
@@ -155,6 +169,7 @@ const initiatieven: Initiatief[] = [
       'Laagdrempelige afstemming tussen behandelaar en begeleider. Contractuele mogelijkheden voor groepsbegeleiding als apart product. Fysieke ruimte voor groepssessies.',
     businessCase:
       'In ontwikkeling. Groepsbegeleiding versus individueel biedt aanzienlijke effici\u00ebntiewinst. Potentieel \u20AC0,3 \u2013 0,8 mln regionaal per jaar.',
+    clientPadFase: 'Behandeltraject & afronding',
   },
 ];
 
@@ -307,6 +322,12 @@ export default function InitiatievenPage() {
                       {item.besparing}
                     </span>
                   </div>
+                  <div className="mt-3">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur-sm">
+                      <Footprints className="h-3.5 w-3.5" />
+                      {item.clientPadFase}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Card body */}
@@ -402,12 +423,11 @@ export default function InitiatievenPage() {
             Totale potenti&euml;le besparing
           </h3>
           <p className="mt-2 text-4xl font-extrabold tracking-tight text-primary-700 sm:text-5xl">
-            ca. &euro;7 &ndash; 10 mln
+            &euro;2,9 &ndash; 3,8 mln
           </p>
-          <p className="mt-1 text-lg text-primary-600">regionaal per jaar</p>
+          <p className="mt-1 text-lg text-primary-600">regionaal per jaar (gecorrigeerd voor overlappende effecten)</p>
           <p className="mx-auto mt-4 max-w-xl text-sm text-gray-500">
-            Alle bedragen zijn schattingen op basis van regionale data en dienen
-            ter indicatie.
+            (1) De doelgroepen en impactdrijvers voor de verschillende interventies overlappen, waardoor de individuele besparingen niet optelbaar zijn. De totale besparing is ontdubbeld. (2) In het besparingspotentieel zijn de meerkosten van elke aanpak al verdisconteerd &mdash; dit betreft netto besparingspotentieel. Noot: Afwachtende input van Mentaal Beter.
           </p>
         </div>
       </div>

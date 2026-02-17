@@ -12,6 +12,8 @@ import {
   Building2,
   ArrowRight,
   Info,
+  MapPin,
+  Globe,
 } from 'lucide-react';
 
 /* ------------------------------------------------------------------ */
@@ -185,9 +187,10 @@ export default function ImpactSimulatorPage() {
   const [mounted, setMounted] = useState(false);
   const [sggzVolume, setSggzVolume] = useState<number | ''>('');
   const [bggzVolume, setBggzVolume] = useState<number | ''>('');
-  const [sggzCost, setSggzCost] = useState<number>(3000);
-  const [bggzCost, setBggzCost] = useState<number>(1800);
+  const [sggzCost, setSggzCost] = useState<number>(3800);
+  const [bggzCost, setBggzCost] = useState<number>(1300);
   const [years, setYears] = useState<number>(1);
+  const [scale, setScale] = useState<'organisatie' | 'regio' | 'landelijk'>('organisatie');
   const [selectedInitiatives, setSelectedInitiatives] = useState<Set<string>>(
     new Set()
   );
@@ -201,6 +204,20 @@ export default function ImpactSimulatorPage() {
       else next.add(id);
       return next;
     });
+  };
+
+  const handleScaleChange = (newScale: 'organisatie' | 'regio' | 'landelijk') => {
+    setScale(newScale);
+    if (newScale === 'regio') {
+      setSggzVolume(4800);
+      setBggzVolume(3200);
+    } else if (newScale === 'landelijk') {
+      setSggzVolume(160000);
+      setBggzVolume(240000);
+    } else {
+      setSggzVolume('');
+      setBggzVolume('');
+    }
   };
 
   /* ---- Calculation ---- */
@@ -528,6 +545,89 @@ export default function ImpactSimulatorPage() {
                   Besparingen en volumes worden cumulatief berekend over de geselecteerde periode.
                 </p>
               </div>
+            </div>
+
+            {/* Schaal */}
+            <div className="rounded-2xl bg-white shadow-md border border-gray-100 p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-cyan-100 text-cyan-600">
+                  <MapPin size={20} />
+                </span>
+                <h2 className="text-lg font-bold text-gray-900">
+                  Schaal
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {([
+                  { key: 'organisatie' as const, label: 'Mijn organisatie', icon: Building2, desc: 'Eigen volumes invullen' },
+                  { key: 'regio' as const, label: 'ZHZ-regio', icon: MapPin, desc: '10 gemeenten' },
+                  { key: 'landelijk' as const, label: 'Landelijk', icon: Globe, desc: '390 gemeenten' },
+                ]).map((opt) => {
+                  const isActive = scale === opt.key;
+                  const OptIcon = opt.icon;
+                  return (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => handleScaleChange(opt.key)}
+                      className={`text-left rounded-xl border-2 p-4 transition-all duration-300 ${
+                        isActive
+                          ? 'border-cyan-400 bg-cyan-50/60 shadow-md shadow-cyan-100'
+                          : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          className={`inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors shrink-0 ${
+                            isActive
+                              ? 'bg-cyan-500 text-white'
+                              : 'bg-gray-100 text-gray-400'
+                          }`}
+                        >
+                          <OptIcon size={16} />
+                        </span>
+                        <div className="min-w-0">
+                          <span className={`block text-sm font-semibold ${isActive ? 'text-cyan-900' : 'text-gray-900'}`}>
+                            {opt.label}
+                          </span>
+                          <span className="block text-xs text-gray-500">{opt.desc}</span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {scale === 'regio' && (
+                <div className="mt-4 rounded-xl bg-cyan-50 border border-cyan-200 p-4">
+                  <p className="text-sm text-cyan-800 leading-relaxed">
+                    <span className="font-semibold">Zuid-Holland Zuid</span> heeft ca. 4.800 SGGZ-verwijzingen en ca. 3.200 BGGZ-verwijzingen per jaar (10 gemeenten, ~250.000 inwoners).
+                  </p>
+                  <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-cyan-600 text-white px-4 py-1.5 text-sm font-semibold">
+                    <Users size={14} />
+                    Dit raakt {formatNumber(
+                      (typeof sggzVolume === 'number' ? sggzVolume : 0) +
+                      (typeof bggzVolume === 'number' ? bggzVolume : 0)
+                    )} jeugdigen
+                  </div>
+                </div>
+              )}
+
+              {scale === 'landelijk' && (
+                <div className="mt-4 rounded-xl bg-cyan-50 border border-cyan-200 p-4">
+                  <p className="text-sm text-cyan-800 leading-relaxed">
+                    <span className="font-semibold">Nederland</span> heeft ca. 400.000 jeugdigen in de GGZ per jaar, waarvan ca. 160.000 SGGZ en ca. 240.000 BGGZ (390 gemeenten).
+                  </p>
+                  <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-cyan-600 text-white px-4 py-1.5 text-sm font-semibold">
+                    <Users size={14} />
+                    Dit raakt {formatNumber(
+                      (typeof sggzVolume === 'number' ? sggzVolume : 0) +
+                      (typeof bggzVolume === 'number' ? bggzVolume : 0)
+                    )} jeugdigen
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Initiative checkboxes */}
