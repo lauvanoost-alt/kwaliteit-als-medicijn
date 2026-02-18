@@ -148,6 +148,19 @@ const landLabels: Record<string, string> = {
 };
 
 /* ------------------------------------------------------------------ */
+/*  DATE FORMAT HELPER                                                 */
+/* ------------------------------------------------------------------ */
+
+function formatDatum(d: string): string {
+  if (!d) return '';
+  // Full ISO date: YYYY-MM-DD → DD-MM-YYYY
+  const iso = d.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) return `${iso[3]}-${iso[2]}-${iso[1]}`;
+  // Year only: keep as-is
+  return d;
+}
+
+/* ------------------------------------------------------------------ */
 /*  TAG COLOR HELPER                                                   */
 /* ------------------------------------------------------------------ */
 
@@ -422,7 +435,7 @@ export default function BronnenPage() {
                               {landLabels[b.land] || b.land}
                             </span>
                             {b.datum && (
-                              <span className="text-[11px] text-gray-400">{b.datum}</span>
+                              <span className="text-[11px] text-gray-400">{formatDatum(b.datum)}</span>
                             )}
                           </div>
                           <p className="text-sm text-gray-600 leading-relaxed mb-2">{b.beschrijving}</p>
