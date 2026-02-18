@@ -39,14 +39,14 @@ interface Provider {
 }
 
 const providers: Provider[] = [
-  { name: 'De Hoop', initiatives: 3, volumeReduction: 17.2, revenueImpact: 5.2, score: 5, trend: 'up' },
-  { name: 'Perspectief', initiatives: 3, volumeReduction: 15.8, revenueImpact: 4.6, score: 5, trend: 'up' },
-  { name: 'Parnassia Groep', initiatives: 2, volumeReduction: 13.4, revenueImpact: 3.8, score: 4, trend: 'up' },
-  { name: 'NeuroScan', initiatives: 2, volumeReduction: 11.6, revenueImpact: 3.1, score: 4, trend: 'stable' },
-  { name: 'Eleos', initiatives: 2, volumeReduction: 9.8, revenueImpact: 2.4, score: 3, trend: 'down' },
-  { name: 'FamilySupporters', initiatives: 1, volumeReduction: 7.2, revenueImpact: 1.9, score: 3, trend: 'up' },
-  { name: 'Mentaal Beter', initiatives: 1, volumeReduction: 5.4, revenueImpact: 1.2, score: 2, trend: 'down' },
-  { name: 'CareHouse', initiatives: 1, volumeReduction: 3.1, revenueImpact: 0.7, score: 2, trend: 'stable' },
+  { name: 'De Hoop', initiatives: 3, volumeReduction: 17.2, revenueImpact: 6.5, score: 5, trend: 'up' },
+  { name: 'Perspectief', initiatives: 3, volumeReduction: 15.8, revenueImpact: 5.8, score: 5, trend: 'up' },
+  { name: 'Parnassia Groep', initiatives: 2, volumeReduction: 13.4, revenueImpact: 4.8, score: 4, trend: 'up' },
+  { name: 'NeuroScan', initiatives: 2, volumeReduction: 11.6, revenueImpact: 3.9, score: 4, trend: 'stable' },
+  { name: 'Eleos', initiatives: 2, volumeReduction: 9.8, revenueImpact: 3.0, score: 3, trend: 'down' },
+  { name: 'FamilySupporters', initiatives: 1, volumeReduction: 7.2, revenueImpact: 2.4, score: 3, trend: 'up' },
+  { name: 'Mentaal Beter', initiatives: 1, volumeReduction: 5.4, revenueImpact: 1.5, score: 2, trend: 'down' },
+  { name: 'CareHouse', initiatives: 1, volumeReduction: 3.1, revenueImpact: 0.9, score: 2, trend: 'stable' },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -254,12 +254,12 @@ export default function DashboardPage() {
               <div className="relative">
                 <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 mb-3"><DollarSign size={20} /></span>
                 <p className="text-sm text-gray-500 font-medium flex items-center gap-1">
-                  Gem. Omzeteffect
-                  <Tooltip text="Omzetreductie als gevolg van initiatieven, excl. correctie voor extra instroom door nieuwe verwijzingen">
+                  Gem. Omzetgroei
+                  <Tooltip text="Verwachte omzetgroei door extra instroom via wachtlijstbemiddeling en volumeherverdeling">
                     <Info size={14} className="text-gray-400" />
                   </Tooltip>
                 </p>
-                <p className="text-3xl font-extrabold text-gray-900 mt-1">&minus;<AnimatedCounter target={parseFloat(avgRevenueImpact.toFixed(1))} suffix="%" /></p>
+                <p className="text-3xl font-extrabold text-gray-900 mt-1">+<AnimatedCounter target={parseFloat(avgRevenueImpact.toFixed(1))} suffix="%" /></p>
               </div>
             </div>
 
@@ -305,7 +305,7 @@ export default function DashboardPage() {
               <span>Aanbieder</span>
               <span className="text-center">Initiatieven</span>
               <Tooltip text="Percentage minder verwijzingen / behandelingen"><span className="text-center">Volumereductie</span></Tooltip>
-              <Tooltip text="Omzetreductie als gevolg van initiatieven, excl. correctie voor extra instroom door nieuwe verwijzingen"><span className="text-center flex items-center justify-center gap-1">Omzeteffect <Info size={12} /></span></Tooltip>
+              <Tooltip text="Verwachte omzetgroei door extra instroom via wachtlijstbemiddeling en volumeherverdeling"><span className="text-center flex items-center justify-center gap-1">Omzetgroei <Info size={12} /></span></Tooltip>
               <span className="text-center">Score</span>
               <span className="text-center">Trend</span>
             </div>
@@ -345,8 +345,8 @@ export default function DashboardPage() {
 
                   {/* Revenue */}
                   <div className="text-center">
-                    <span className="font-bold text-amber-700">&minus;{p.revenueImpact}%</span>
-                    <ProgressBar value={p.revenueImpact} max={8} color="#f59e0b" />
+                    <span className="font-bold text-emerald-700">+{p.revenueImpact}%</span>
+                    <ProgressBar value={p.revenueImpact} max={8} color="#10b981" />
                   </div>
 
                   {/* Score */}
@@ -376,19 +376,18 @@ export default function DashboardPage() {
           <div className="rounded-2xl bg-gradient-to-br from-emerald-50 via-white to-teal-50 shadow-md border border-emerald-100 overflow-hidden">
             {/* Header banner */}
             <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4 text-white">
-              <p className="text-sm font-medium text-emerald-100">Omzeteffect &amp; Volumeherverdeling</p>
-              <p className="mt-1 text-lg font-bold">Hoe lezen we het omzeteffect?</p>
+              <p className="text-sm font-medium text-emerald-100">Omzetgroei &amp; Volumeherverdeling</p>
+              <p className="mt-1 text-lg font-bold">Hoe lezen we de omzetgroei?</p>
             </div>
 
             <div className="p-6 sm:p-8">
               <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 mb-8 flex items-start gap-3">
                 <Info size={20} className="text-amber-600 shrink-0 mt-0.5" />
                 <p className="text-sm text-amber-800 leading-relaxed">
-                  <strong>Toelichting:</strong> Het omzeteffect in het dashboard toont de omzetreductie als gevolg van
-                  initiatieven, <strong>exclusief</strong> correctie voor extra instroom door nieuwe verwijzingen. In de
-                  praktijk wordt vrijgekomen capaciteit bij koplopers direct weer opgevuld via wachtlijstbemiddeling en
-                  sturing van verwijzers. Het netto-effect op de omzet van aanbieders is daardoor aanzienlijk kleiner
-                  dan het hier getoonde bruto-effect &mdash; en kan zelfs positief uitvallen.
+                  <strong>Toelichting:</strong> De omzetgroei in het dashboard toont het verwachte positieve effect op de
+                  omzet van aanbieders. Door vrijgekomen capaciteit via wachtlijstbemiddeling en sturing van verwijzers
+                  direct te benutten voor nieuwe jeugdigen, groeit het volume per aanbieder. Koplopers die investeren in
+                  kwaliteit en kortere trajecten profiteren het meest van deze extra instroom.
                 </p>
               </div>
 
@@ -462,10 +461,9 @@ export default function DashboardPage() {
               <div className="mt-6 rounded-xl bg-emerald-50 border border-emerald-200 p-4 flex items-start gap-3">
                 <Shield size={20} className="text-emerald-600 shrink-0 mt-0.5" />
                 <p className="text-sm text-emerald-800 leading-relaxed">
-                  <strong>Kernprincipe:</strong> Het getoonde omzeteffect is een bruto-indicatie. Na correctie voor
-                  extra instroom en volumeherverdeling is het netto-effect voor aanbieders beperkt tot nihil.
-                  Kortere trajecten leiden niet tot minder omzet maar tot meer ruimte voor wachtende
-                  jeugdigen &mdash; een win-win voor aanbieder en regio.
+                  <strong>Kernprincipe:</strong> Kortere trajecten leiden niet tot minder omzet maar tot meer ruimte
+                  voor wachtende jeugdigen. Via wachtlijstbemiddeling en volumeherverdeling wordt vrijgekomen capaciteit
+                  direct benut, wat leidt tot omzetgroei voor koplopers &mdash; een win-win voor aanbieder en regio.
                 </p>
               </div>
             </div>
