@@ -18,7 +18,9 @@ import {
   Share2,
   Presentation,
   UserCheck,
+  FileSpreadsheet,
 } from 'lucide-react';
+import { generateBusinesscaseExcel } from '@/lib/generateBusinesscaseExcel';
 
 /* ------------------------------------------------------------------ */
 /*  INITIATIVE DATA                                                    */
@@ -505,6 +507,22 @@ export default function ImpactSimulatorPage() {
       setTimeout(() => w.print(), 300);
     }
   }, [results, sggzVolume, bggzVolume, sggzCost, bggzCost, selectedInitiatives, scale]);
+
+  const downloadExcel = useCallback(async () => {
+    if (!results) return;
+    const sggz = typeof sggzVolume === 'number' ? sggzVolume : 0;
+    const bggz = typeof bggzVolume === 'number' ? bggzVolume : 0;
+    await generateBusinesscaseExcel({
+      sggzVolume: sggz,
+      bggzVolume: bggz,
+      sggzCost,
+      bggzCost,
+      years,
+      scale,
+      selectedInitiativeIds: Array.from(selectedInitiatives),
+      allInitiatives: initiativeOptions,
+    });
+  }, [results, sggzVolume, bggzVolume, sggzCost, bggzCost, selectedInitiatives, years, scale]);
 
   if (!mounted) return null;
 
@@ -1168,16 +1186,26 @@ export default function ImpactSimulatorPage() {
                 Zo maak je de impact van Kwaliteit als Medicijn concreet en bespreekbaar.
               </p>
 
-              <button
-                type="button"
-                onClick={downloadBusinesscase}
-                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-4 text-base font-bold text-white shadow-lg hover:from-indigo-700 hover:to-purple-700 transition-all hover:shadow-xl hover:-translate-y-0.5"
-              >
-                <Download size={20} />
-                Download Businesscase als PDF
-              </button>
-              <p className="mt-2 text-xs text-gray-400">
-                Opent een print-vriendelijke pagina die je als PDF kunt opslaan
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <button
+                  type="button"
+                  onClick={downloadBusinesscase}
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-4 text-base font-bold text-white shadow-lg hover:from-indigo-700 hover:to-purple-700 transition-all hover:shadow-xl hover:-translate-y-0.5"
+                >
+                  <Download size={20} />
+                  Download als PDF
+                </button>
+                <button
+                  type="button"
+                  onClick={downloadExcel}
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-8 py-4 text-base font-bold text-white shadow-lg hover:from-emerald-700 hover:to-teal-700 transition-all hover:shadow-xl hover:-translate-y-0.5"
+                >
+                  <FileSpreadsheet size={20} />
+                  Download als Excel
+                </button>
+              </div>
+              <p className="mt-3 text-xs text-gray-400">
+                PDF: print-vriendelijke versie &nbsp;|&nbsp; Excel: volledige businesscase met berekeningen, formules en meerdere tabbladen
               </p>
             </div>
 
