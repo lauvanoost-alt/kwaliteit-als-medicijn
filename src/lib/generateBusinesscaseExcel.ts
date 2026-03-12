@@ -1,9 +1,16 @@
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import {
+  C, F, solidFill, greenBorder, thinBorder,
+  colLetter, addr, ref,
+  addTitleBar, addBar, addSectionHeader, addSubSection, addColumnHeaders,
+  setStaticInput, setDynamicInput, setCalcCell, setInfoCell, setTotalCell,
+  setLabel, setCheckCell,
+} from './excelStyles';
 
-/* ------------------------------------------------------------------ */
-/*  TYPES                                                              */
-/* ------------------------------------------------------------------ */
+/* ================================================================
+   TYPES
+   ================================================================ */
 
 export interface InitiativeData {
   id: string;
@@ -30,890 +37,1041 @@ export interface ExcelExportParams {
   allInitiatives: InitiativeData[];
 }
 
-/* ------------------------------------------------------------------ */
-/*  STYLING CONSTANTS                                                  */
-/* ------------------------------------------------------------------ */
+/* ================================================================
+   SHEET NAMES (constants for formula references)
+   ================================================================ */
 
-const COLORS = {
-  headerBg: 'FF4338CA',        // Indigo-700
-  headerFont: 'FFFFFFFF',
-  inputBg: 'FFEEF2FF',         // Indigo-50  (lichtblauw)
-  inputBorder: 'FF818CF8',     // Indigo-400
-  assumptionBg: 'FFFEFCE8',    // Yellow-50
-  assumptionBorder: 'FFFBBF24', // Yellow-400
-  outputBg: 'FFF0FDF4',        // Green-50
-  outputBorder: 'FF22C55E',    // Green-500
-  sectionBg: 'FFF8FAFC',       // Slate-50
-  subtleBorder: 'FFE2E8F0',    // Slate-200
-  accentPurple: 'FF7C3AED',
-  accentGreen: 'FF059669',
-  white: 'FFFFFFFF',
+const SN = {
+  TITLE: 'Title',
+  TOC: 'ToC',
+  INPUT: '1. Input',
+  IMPACT: '2. Impact Model',
+  FIN: '3. Financieel Model',
+  OUTPUT: '4. Output',
+  CHECKS: '5. Checks',
+  FORMAT: 'A.1 Format Convention',
+  DOCS: 'A.2 Documentatie',
 };
 
-const FONT = {
-  header: { name: 'Calibri', size: 14, bold: true, color: { argb: COLORS.headerFont } },
-  sectionTitle: { name: 'Calibri', size: 12, bold: true, color: { argb: 'FF1E293B' } },
-  label: { name: 'Calibri', size: 11, color: { argb: 'FF475569' } },
-  value: { name: 'Calibri', size: 11, bold: true, color: { argb: 'FF1E293B' } },
-  valueLarge: { name: 'Calibri', size: 13, bold: true, color: { argb: 'FF1E293B' } },
-  note: { name: 'Calibri', size: 9, italic: true, color: { argb: 'FF94A3B8' } },
-  instruction: { name: 'Calibri', size: 11, color: { argb: 'FF334155' } },
+/* ================================================================
+   INPUT SHEET LAYOUT — row/col constants for formula references
+   ================================================================ */
+
+// Values are in column D (4)
+const I_COL = 4;  // Value column on Input sheet
+const I = {
+  SGGZ_VOL: 9,
+  BGGZ_VOL: 10,
+  TOTAL_VOL: 11,
+  SGGZ_COST: 15,
+  BGGZ_COST: 16,
+  COST_DIFF: 17,
+  YEARS: 21,
+  SCALE: 22,
+  INIT_FIRST: 27, // First initiative row
+  INIT_LAST: 31,  // Last initiative row (5 initiatives)
 };
 
-function headerFill(color: string): ExcelJS.Fill {
-  return { type: 'pattern', pattern: 'solid', fgColor: { argb: color } };
-}
+// Initiative table columns on Input sheet
+const IC = {
+  NAME: 2,       // B
+  SGGZ_RED: 3,   // C
+  BGGZ_RED: 4,   // D
+  SHIFT: 5,      // E
+  VAR_COST: 6,   // F
+  FIXED_COST: 7, // G
+  ACTIVE: 8,     // H
+  NOTE: 9,       // I
+};
 
-function thinBorder(color: string): Partial<ExcelJS.Borders> {
-  const style: ExcelJS.BorderStyle = 'thin';
-  const border = { style, color: { argb: color } };
-  return { top: border, bottom: border, left: border, right: border };
-}
+/* ================================================================
+   IMPACT MODEL LAYOUT — row constants
+   ================================================================ */
 
-function euroFormat(value: number): string {
-  return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
-}
+// Values in column D (4)
+const M_COL = 4;
+const M = {
+  // 1. Combined reductions
+  SGGZ_H_START: 10,  // Helper rows start (5 rows: 10-14)
+  SGGZ_PRODUCT: 16,
+  SGGZ_COMBINED: 17,
+  BGGZ_H_START: 21,
+  BGGZ_PRODUCT: 27,
+  BGGZ_COMBINED: 28,
+  SHIFT_H_START: 32,
+  SHIFT_PRODUCT: 38,
+  SHIFT_COMBINED: 39,
+  // 2. Volume effects
+  VOL_SGGZ: 43,
+  VOL_SGGZ_REDUCED: 44,
+  VOL_SGGZ_REMAINING: 45,
+  VOL_SHIFTED: 46,
+  VOL_BGGZ: 47,
+  VOL_BGGZ_REDUCED: 48,
+  // 3. Cost savings per year
+  SAVE_SGGZ_DIRECT: 52,
+  SAVE_SHIFT: 53,
+  SAVE_SGGZ_TOTAL: 54,
+  SAVE_BGGZ: 55,
+  SAVE_TOTAL: 56,
+  // 4. Investment
+  INV_FIXED: 60,
+  INV_VARIABLE: 61,
+  INV_TOTAL: 62,
+  NET_SAVINGS: 63,
+};
 
-/* ------------------------------------------------------------------ */
-/*  HELPER: style a header row                                         */
-/* ------------------------------------------------------------------ */
-function styleHeaderRow(ws: ExcelJS.Worksheet, row: number, colStart: number, colEnd: number) {
-  for (let c = colStart; c <= colEnd; c++) {
-    const cell = ws.getCell(row, c);
-    cell.font = FONT.header;
-    cell.fill = headerFill(COLORS.headerBg);
-    cell.alignment = { vertical: 'middle', horizontal: 'left' };
-  }
-}
-
-function styleSectionTitle(ws: ExcelJS.Worksheet, row: number, col: number, colSpan: number) {
-  const cell = ws.getCell(row, col);
-  cell.font = FONT.sectionTitle;
-  if (colSpan > 1) ws.mergeCells(row, col, row, col + colSpan - 1);
-  cell.border = { bottom: { style: 'medium', color: { argb: COLORS.headerBg } } };
-}
-
-function setLabelValue(ws: ExcelJS.Worksheet, row: number, labelCol: number, valueCol: number, label: string, value: string | number, options?: { isCurrency?: boolean; isPercentage?: boolean; bgColor?: string; borderColor?: string; note?: string }) {
-  const labelCell = ws.getCell(row, labelCol);
-  labelCell.value = label;
-  labelCell.font = FONT.label;
-  labelCell.alignment = { vertical: 'middle', wrapText: true };
-
-  const valueCell = ws.getCell(row, valueCol);
-  valueCell.value = value;
-  valueCell.font = FONT.value;
-  valueCell.alignment = { vertical: 'middle', horizontal: 'right' };
-
-  if (options?.isCurrency && typeof value === 'number') {
-    valueCell.numFmt = '€#,##0';
-  }
-  if (options?.isPercentage && typeof value === 'number') {
-    valueCell.numFmt = '0.0%';
-  }
-  if (options?.bgColor) {
-    labelCell.fill = headerFill(options.bgColor);
-    valueCell.fill = headerFill(options.bgColor);
-  }
-  if (options?.borderColor) {
-    labelCell.border = thinBorder(options.borderColor);
-    valueCell.border = thinBorder(options.borderColor);
-  }
-  if (options?.note) {
-    valueCell.note = options.note;
-  }
-}
-
-/* ------------------------------------------------------------------ */
-/*  MAIN EXPORT FUNCTION                                               */
-/* ------------------------------------------------------------------ */
+/* ================================================================
+   MAIN EXPORT FUNCTION
+   ================================================================ */
 
 export async function generateBusinesscaseExcel(params: ExcelExportParams): Promise<void> {
   const { sggzVolume, bggzVolume, sggzCost, bggzCost, years, scale, selectedInitiativeIds, allInitiatives } = params;
 
+  const fixedCostKey = scale === 'landelijk' ? 'fixedCostLandelijk' : scale === 'regio' ? 'fixedCostRegio' : 'fixedCostOrganisatie';
+  const scaleLabel = scale === 'landelijk' ? 'Landelijk' : scale === 'regio' ? 'ZHZ-regio' : 'Organisatie';
+  const dateStr = new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  // Pre-calculate for cached formula results
   const selected = allInitiatives.filter(i => selectedInitiativeIds.includes(i.id));
-  const scaleLabel = scale === 'landelijk' ? 'Landelijk (Nederland)' : scale === 'regio' ? 'ZHZ-regio (Zuid-Holland Zuid)' : 'Organisatie';
-
-  // ---- Pre-calculate results (same logic as simulator) ----
-  const combinedSggzReduction = 1 - selected.reduce((p, i) => p * (1 - i.sggzReductionPct / 100), 1);
-  const combinedBggzReduction = 1 - selected.reduce((p, i) => p * (1 - i.bggzReductionPct / 100), 1);
+  const combinedSggzRed = 1 - selected.reduce((p, i) => p * (1 - i.sggzReductionPct / 100), 1);
+  const combinedBggzRed = 1 - selected.reduce((p, i) => p * (1 - i.bggzReductionPct / 100), 1);
   const combinedShift = 1 - selected.reduce((p, i) => p * (1 - i.sggzToBggzShiftPct / 100), 1);
-
-  const sggzReduced = Math.round(sggzVolume * combinedSggzReduction);
+  const sggzReduced = Math.round(sggzVolume * combinedSggzRed);
   const sggzRemaining = sggzVolume - sggzReduced;
   const shiftedToBggz = Math.round(sggzRemaining * combinedShift);
-  const bggzReduced = Math.round(bggzVolume * combinedBggzReduction);
-
+  const bggzReduced = Math.round(bggzVolume * combinedBggzRed);
   const sggzSavingsPerYear = sggzReduced * sggzCost + shiftedToBggz * (sggzCost - bggzCost);
   const bggzSavingsPerYear = bggzReduced * bggzCost;
   const totalSavingsPerYear = sggzSavingsPerYear + bggzSavingsPerYear;
-
-  const fixedCostKey = scale === 'landelijk' ? 'fixedCostLandelijk' : scale === 'regio' ? 'fixedCostRegio' : 'fixedCostOrganisatie';
-  const fixedCosts = selected.reduce((sum, i) => sum + i[fixedCostKey], 0);
-  const variableCostsPerYear = selected.reduce((sum, i) => sum + i.costPerSggzYouth * sggzVolume, 0);
+  const fixedCosts = selected.reduce((s, i) => s + i[fixedCostKey], 0);
+  const variableCostsPerYear = selected.reduce((s, i) => s + i.costPerSggzYouth * sggzVolume, 0);
   const totalInvestment = fixedCosts + variableCostsPerYear * years;
   const netSavingsPerYear = totalSavingsPerYear - variableCostsPerYear;
 
   // ---- Create workbook ----
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'Kwaliteit als Medicijn - Impact Simulator';
+  wb.creator = 'Kwaliteit als Medicijn — Impact Simulator';
   wb.created = new Date();
-  wb.properties.date1904 = false;
 
   // ================================================================
-  //  SHEET 1: SAMENVATTING (Executive Summary)
+  //  SHEET: TITLE
   // ================================================================
-  const wsSummary = wb.addWorksheet('Samenvatting', { properties: { tabColor: { argb: '4338CA' } } });
-  wsSummary.columns = [
-    { width: 4 },  // A: spacer
-    { width: 38 }, // B: labels
-    { width: 22 }, // C: values
-    { width: 22 }, // D: extra
-    { width: 4 },  // E: spacer
+  const wsTitle = wb.addWorksheet(SN.TITLE, { properties: { tabColor: { argb: C.WHITE } } });
+  wsTitle.columns = [{ width: 4 }, { width: 60 }, { width: 4 }];
+  wsTitle.getRow(5).height = 4;
+  wsTitle.mergeCells(5, 1, 5, 3);
+  wsTitle.getCell(5, 1).fill = solidFill(C.BORDEAUX);
+  wsTitle.getCell(5, 2).fill = solidFill(C.BORDEAUX);
+  wsTitle.getCell(5, 3).fill = solidFill(C.BORDEAUX);
+
+  wsTitle.getCell(8, 2).value = 'Kwaliteit als Medicijn';
+  wsTitle.getCell(8, 2).font = { name: 'Arial', size: 22, bold: true, color: { argb: C.BORDEAUX } };
+  wsTitle.getCell(10, 2).value = 'Businesscase — Impact Simulator';
+  wsTitle.getCell(10, 2).font = { name: 'Arial', size: 14, bold: true, color: { argb: C.BORDEAUX } };
+  wsTitle.getCell(12, 2).value = `Schaal: ${scaleLabel}`;
+  wsTitle.getCell(12, 2).font = F.label;
+  wsTitle.getCell(13, 2).value = `Gegenereerd: ${dateStr}`;
+  wsTitle.getCell(13, 2).font = F.label;
+  wsTitle.getCell(14, 2).value = 'Versie: 1.0';
+  wsTitle.getCell(14, 2).font = F.label;
+
+  wsTitle.getRow(17).height = 4;
+  wsTitle.mergeCells(17, 1, 17, 3);
+  wsTitle.getCell(17, 1).fill = solidFill(C.BORDEAUX);
+  wsTitle.getCell(17, 2).fill = solidFill(C.BORDEAUX);
+  wsTitle.getCell(17, 3).fill = solidFill(C.BORDEAUX);
+
+  wsTitle.getCell(19, 2).value = 'Dit model bevat de financiele onderbouwing van het programma';
+  wsTitle.getCell(19, 2).font = F.note;
+  wsTitle.getCell(20, 2).value = 'Kwaliteit als Medicijn voor de Jeugd GGZ in Zuid-Holland Zuid.';
+  wsTitle.getCell(20, 2).font = F.note;
+
+  // ================================================================
+  //  SHEET: TABLE OF CONTENTS
+  // ================================================================
+  const wsToc = wb.addWorksheet(SN.TOC, { properties: { tabColor: { argb: C.WHITE } } });
+  wsToc.columns = [{ width: 4 }, { width: 50 }, { width: 30 }, { width: 4 }];
+
+  wsToc.getCell(3, 2).value = 'Table of Contents';
+  wsToc.getCell(3, 2).font = { name: 'Arial', size: 14, bold: true, color: { argb: C.BLACK } };
+
+  addBar(wsToc, 5, 1, 4);
+
+  const tocItems: [string, string][] = [
+    [SN.INPUT, 'Alle input parameters en aannames'],
+    [SN.IMPACT, 'Berekeningslogica (formules refereren naar Input)'],
+    [SN.FIN, 'Jaaroverzicht besparing, investering, netto resultaat'],
+    [SN.OUTPUT, 'Samenvatting KPIs en kernresultaten'],
+    [SN.CHECKS, 'Controleberekeningen en foutdetectie'],
+    [SN.FORMAT, 'Uitleg kleurconventies in dit model'],
+    [SN.DOCS, 'Methodiek, bronnen en disclaimer'],
   ];
 
-  // Title block
-  let r = 2;
-  wsSummary.mergeCells(r, 2, r, 4);
-  const titleCell = wsSummary.getCell(r, 2);
-  titleCell.value = 'BUSINESSCASE: KWALITEIT ALS MEDICIJN';
-  titleCell.font = { name: 'Calibri', size: 16, bold: true, color: { argb: COLORS.headerFont } };
-  titleCell.fill = headerFill(COLORS.headerBg);
-  titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
-  wsSummary.getCell(r, 3).fill = headerFill(COLORS.headerBg);
-  wsSummary.getCell(r, 4).fill = headerFill(COLORS.headerBg);
-  wsSummary.getRow(r).height = 36;
-
-  r++;
-  wsSummary.mergeCells(r, 2, r, 4);
-  const subtitleCell = wsSummary.getCell(r, 2);
-  subtitleCell.value = `Impact Simulator — gegenereerd op ${new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}`;
-  subtitleCell.font = { name: 'Calibri', size: 10, italic: true, color: { argb: COLORS.headerFont } };
-  subtitleCell.fill = headerFill(COLORS.accentPurple);
-  subtitleCell.alignment = { horizontal: 'center' };
-  wsSummary.getCell(r, 3).fill = headerFill(COLORS.accentPurple);
-  wsSummary.getCell(r, 4).fill = headerFill(COLORS.accentPurple);
-
-  // Configuratie
-  r += 2;
-  styleSectionTitle(wsSummary, r, 2, 3);
-  wsSummary.getCell(r, 2).value = 'Configuratie';
-  r++;
-  setLabelValue(wsSummary, r, 2, 3, 'Schaal', scaleLabel, { bgColor: COLORS.inputBg, borderColor: COLORS.inputBorder });
-  r++;
-  setLabelValue(wsSummary, r, 2, 3, 'Looptijd', `${years} jaar`, { bgColor: COLORS.inputBg, borderColor: COLORS.inputBorder });
-  r++;
-  setLabelValue(wsSummary, r, 2, 3, 'SGGZ-volume per jaar', sggzVolume, { bgColor: COLORS.inputBg, borderColor: COLORS.inputBorder, note: 'INPUT: Aantal jongeren met SGGZ-verwijzing per jaar' });
-  r++;
-  setLabelValue(wsSummary, r, 2, 3, 'BGGZ-volume per jaar', bggzVolume, { bgColor: COLORS.inputBg, borderColor: COLORS.inputBorder, note: 'INPUT: Aantal jongeren met BGGZ-verwijzing per jaar' });
-  r++;
-  setLabelValue(wsSummary, r, 2, 3, 'Kosten per SGGZ-traject', sggzCost, { isCurrency: true, bgColor: COLORS.inputBg, borderColor: COLORS.inputBorder, note: 'INPUT: Gemiddelde kosten per SGGZ-traject. Standaardwaarde: €3.800' });
-  r++;
-  setLabelValue(wsSummary, r, 2, 3, 'Kosten per BGGZ-traject', bggzCost, { isCurrency: true, bgColor: COLORS.inputBg, borderColor: COLORS.inputBorder, note: 'INPUT: Gemiddelde kosten per BGGZ-traject. Standaardwaarde: €1.300' });
-  r++;
-  setLabelValue(wsSummary, r, 2, 3, 'Geselecteerde initiatieven', selected.map(i => i.name).join(', '), { bgColor: COLORS.inputBg, borderColor: COLORS.inputBorder });
-  wsSummary.getCell(r, 3).alignment = { wrapText: true, vertical: 'middle', horizontal: 'right' };
-  wsSummary.getRow(r).height = Math.max(20, selected.length * 14);
-
-  // Resultaten
-  r += 2;
-  styleSectionTitle(wsSummary, r, 2, 3);
-  wsSummary.getCell(r, 2).value = 'Verwachte Resultaten';
-  r++;
-  setLabelValue(wsSummary, r, 2, 3, 'Gecombineerde SGGZ-reductie', combinedSggzReduction, { isPercentage: true, bgColor: COLORS.outputBg, borderColor: COLORS.outputBorder, note: 'OUTPUT: Gecombineerde reductie via multiplicatieve formule: 1 - ∏(1 - reductie_i)' });
-  r++;
-  setLabelValue(wsSummary, r, 2, 3, 'Gecombineerde BGGZ-reductie', combinedBggzReduction, { isPercentage: true, bgColor: COLORS.outputBg, borderColor: COLORS.outputBorder });
-  r++;
-  setLabelValue(wsSummary, r, 2, 3, 'SGGZ→BGGZ verschuiving', combinedShift, { isPercentage: true, bgColor: COLORS.outputBg, borderColor: COLORS.outputBorder, note: 'OUTPUT: Percentage van resterende SGGZ-trajecten dat verschuift naar lichtere BGGZ-zorg' });
-
-  r += 2;
-  styleSectionTitle(wsSummary, r, 2, 3);
-  wsSummary.getCell(r, 2).value = `Financieel Overzicht (${years} jaar)`;
-  r++;
-
-  const summaryFinancials: [string, number, string?][] = [
-    ['Totale besparing (cumulatief)', totalSavingsPerYear * years],
-    ['Besparing per jaar', totalSavingsPerYear],
-    ['  - SGGZ-besparing per jaar', sggzSavingsPerYear],
-    ['  - BGGZ-besparing per jaar', bggzSavingsPerYear],
-    ['', 0],
-    ['Totale investering', totalInvestment],
-    ['  - Vaste kosten (implementatie)', fixedCosts, 'Eenmalige kosten voor implementatie, training en opzet'],
-    ['  - Variabele kosten per jaar', variableCostsPerYear, 'Jaarlijkse kosten afhankelijk van het aantal trajecten'],
-    ['', 0],
-    ['Netto besparing per jaar', netSavingsPerYear, 'Besparing minus variabele kosten per jaar'],
-  ];
-
-  for (const [label, value, note] of summaryFinancials) {
-    if (!label) { r++; continue; }
-    const isTotal = !label.startsWith('  ');
-    setLabelValue(wsSummary, r, 2, 3, label, value, {
-      isCurrency: true,
-      bgColor: isTotal ? COLORS.outputBg : undefined,
-      borderColor: isTotal ? COLORS.outputBorder : COLORS.subtleBorder,
-      note,
-    });
-    if (isTotal) {
-      wsSummary.getCell(r, 3).font = { ...FONT.valueLarge, color: { argb: value >= 0 ? COLORS.accentGreen : 'FFDC2626' } };
-    }
-    r++;
-  }
-
-  // Volume effecten
-  r++;
-  styleSectionTitle(wsSummary, r, 2, 3);
-  wsSummary.getCell(r, 2).value = `Volume-effect (${years} jaar cumulatief)`;
-  r++;
-  setLabelValue(wsSummary, r, 2, 3, 'Minder SGGZ-trajecten', sggzReduced * years, { bgColor: COLORS.outputBg, borderColor: COLORS.outputBorder });
-  r++;
-  setLabelValue(wsSummary, r, 2, 3, 'Minder BGGZ-trajecten', bggzReduced * years, { bgColor: COLORS.outputBg, borderColor: COLORS.outputBorder });
-  r++;
-  setLabelValue(wsSummary, r, 2, 3, 'Verschoven naar BGGZ', shiftedToBggz * years, { bgColor: COLORS.outputBg, borderColor: COLORS.outputBorder, note: 'Jongeren die van SGGZ naar de lichtere BGGZ verschuiven' });
-  r++;
-  setLabelValue(wsSummary, r, 2, 3, 'Totaal minder trajecten', (sggzReduced + bggzReduced) * years, { bgColor: COLORS.outputBg, borderColor: COLORS.outputBorder });
-
-  // Legenda
-  r += 2;
-  styleSectionTitle(wsSummary, r, 2, 3);
-  wsSummary.getCell(r, 2).value = 'Legenda';
-  r++;
-  const legendItems: [string, string, string][] = [
-    [COLORS.inputBg, COLORS.inputBorder, 'INPUT — door u ingevulde gegevens'],
-    [COLORS.assumptionBg, COLORS.assumptionBorder, 'AANNAME — standaardwaarden (aanpasbaar op tab "Input & Aannames")'],
-    [COLORS.outputBg, COLORS.outputBorder, 'OUTPUT — berekend resultaat'],
-  ];
-  for (const [bg, border, text] of legendItems) {
-    const colorCell = wsSummary.getCell(r, 2);
-    colorCell.value = '';
-    colorCell.fill = headerFill(bg);
-    colorCell.border = thinBorder(border);
-    const textCell = wsSummary.getCell(r, 3);
-    textCell.value = text;
-    textCell.font = FONT.note;
-    r++;
+  let r = 8;
+  for (const [sheet, desc] of tocItems) {
+    wsToc.getCell(r, 2).value = sheet;
+    wsToc.getCell(r, 2).font = F.section;
+    wsToc.getCell(r, 3).value = desc;
+    wsToc.getCell(r, 3).font = F.note;
+    r += 2;
   }
 
   // ================================================================
-  //  SHEET 2: INPUT & AANNAMES
+  //  SHEET: 1. INPUT
   // ================================================================
-  const wsInput = wb.addWorksheet('Input & Aannames', { properties: { tabColor: { argb: '818CF8' } } });
-  wsInput.columns = [
-    { width: 4 },
-    { width: 40 },
-    { width: 20 },
-    { width: 16 },
-    { width: 30 },
-    { width: 4 },
+  const wsIn = wb.addWorksheet(SN.INPUT, { properties: { tabColor: { argb: C.BORDEAUX } } });
+  wsIn.columns = [
+    { width: 3 },  // A spacer
+    { width: 36 }, // B label
+    { width: 14 }, // C unit
+    { width: 16 }, // D value
+    { width: 20 }, // E source
+    { width: 36 }, // F comment
+    { width: 3 },  // G spacer
   ];
 
   r = 2;
-  wsInput.mergeCells(r, 2, r, 5);
-  styleHeaderRow(wsInput, r, 2, 5);
-  wsInput.getCell(r, 2).value = 'INPUT & AANNAMES';
-  wsInput.getRow(r).height = 30;
-
-  r += 2;
-  // Section: Gebruikersinput
-  styleSectionTitle(wsInput, r, 2, 4);
-  wsInput.getCell(r, 2).value = 'Gebruikersinput (uw selectie)';
+  wsIn.getCell(r, 2).value = '1. Input';
+  wsIn.getCell(r, 2).font = { name: 'Arial', size: 14, bold: true, color: { argb: C.BLACK } };
   r++;
-  // Header row
-  for (const [col, text] of [[2, 'Parameter'], [3, 'Waarde'], [4, 'Eenheid'], [5, 'Toelichting']] as const) {
-    const cell = wsInput.getCell(r, col);
-    cell.value = text;
-    cell.font = { ...FONT.label, bold: true };
-    cell.fill = headerFill(COLORS.sectionBg);
-    cell.border = thinBorder(COLORS.subtleBorder);
-  }
+  addBar(wsIn, r, 1, 7);
+
+  // -- Volume Assumptions --
+  r = 6;
+  addSectionHeader(wsIn, r, 2, 'Volume Aannames');
+  r++;
+  addColumnHeaders(wsIn, r, [
+    { col: 2, text: 'Concept' }, { col: 3, text: 'Eenheid' },
+    { col: 4, text: 'Waarde' }, { col: 5, text: 'Bron' }, { col: 6, text: 'Toelichting' },
+  ]);
   r++;
 
-  const inputRows: [string, string | number, string, string][] = [
-    ['Schaal', scaleLabel, '', 'Het niveau waarop de business case wordt berekend'],
-    ['Looptijd', years, 'jaar', 'Periode waarover de impact cumulatief wordt berekend'],
-    ['SGGZ-volume', sggzVolume, 'jongeren/jaar', 'Aantal jongeren met specialistische GGZ-verwijzing per jaar'],
-    ['BGGZ-volume', bggzVolume, 'jongeren/jaar', 'Aantal jongeren met basis GGZ-verwijzing per jaar'],
-    ['Kosten SGGZ-traject', sggzCost, '€ per traject', 'Gemiddelde kosten per specialistisch GGZ-traject'],
-    ['Kosten BGGZ-traject', bggzCost, '€ per traject', 'Gemiddelde kosten per basis GGZ-traject'],
-  ];
+  // R9: SGGZ volume
+  r = I.SGGZ_VOL;
+  setLabel(wsIn, r, 2, 'SGGZ-volume per jaar');
+  wsIn.getCell(r, 3).value = 'jongeren/jaar'; wsIn.getCell(r, 3).font = F.label;
+  setDynamicInput(wsIn, r, I_COL, sggzVolume, '#,##0');
+  wsIn.getCell(r, 5).value = 'Gebruikersinput'; wsIn.getCell(r, 5).font = F.note;
+  wsIn.getCell(r, 6).value = 'Aantal jongeren met SGGZ-verwijzing per jaar'; wsIn.getCell(r, 6).font = F.note;
 
-  for (const [param, value, unit, note] of inputRows) {
-    wsInput.getCell(r, 2).value = param;
-    wsInput.getCell(r, 2).font = FONT.label;
-    const vCell = wsInput.getCell(r, 3);
-    vCell.value = value;
-    vCell.font = FONT.value;
-    vCell.alignment = { horizontal: 'right' };
-    if (typeof value === 'number' && unit.includes('€')) vCell.numFmt = '€#,##0';
-    wsInput.getCell(r, 4).value = unit;
-    wsInput.getCell(r, 4).font = FONT.label;
-    wsInput.getCell(r, 5).value = note;
-    wsInput.getCell(r, 5).font = FONT.note;
-    for (let c = 2; c <= 5; c++) {
-      wsInput.getCell(r, c).fill = headerFill(COLORS.inputBg);
-      wsInput.getCell(r, c).border = thinBorder(COLORS.inputBorder);
-    }
-    r++;
-  }
+  // R10: BGGZ volume
+  r = I.BGGZ_VOL;
+  setLabel(wsIn, r, 2, 'BGGZ-volume per jaar');
+  wsIn.getCell(r, 3).value = 'jongeren/jaar'; wsIn.getCell(r, 3).font = F.label;
+  setDynamicInput(wsIn, r, I_COL, bggzVolume, '#,##0');
+  wsIn.getCell(r, 5).value = 'Gebruikersinput'; wsIn.getCell(r, 5).font = F.note;
+  wsIn.getCell(r, 6).value = 'Aantal jongeren met BGGZ-verwijzing per jaar'; wsIn.getCell(r, 6).font = F.note;
 
-  // Section: Aannames / standaardwaarden
-  r += 2;
-  styleSectionTitle(wsInput, r, 2, 4);
-  wsInput.getCell(r, 2).value = 'Aannames & Standaardwaarden';
+  // R11: Total volume (formula)
+  r = I.TOTAL_VOL;
+  setLabel(wsIn, r, 2, 'Totaal volume per jaar');
+  wsIn.getCell(r, 3).value = 'jongeren/jaar'; wsIn.getCell(r, 3).font = F.label;
+  setCalcCell(wsIn, r, I_COL, { formula: `${addr(I_COL, I.SGGZ_VOL)}+${addr(I_COL, I.BGGZ_VOL)}`, result: sggzVolume + bggzVolume }, '#,##0');
+  wsIn.getCell(r, 5).value = 'Berekend'; wsIn.getCell(r, 5).font = F.note;
+
+  // -- Cost Assumptions --
+  r = 13;
+  addSectionHeader(wsIn, r, 2, 'Kosten Aannames');
   r++;
+  addColumnHeaders(wsIn, r, [
+    { col: 2, text: 'Concept' }, { col: 3, text: 'Eenheid' },
+    { col: 4, text: 'Waarde' }, { col: 5, text: 'Bron' }, { col: 6, text: 'Toelichting' },
+  ]);
 
-  const assumptions: [string, string, string][] = [
-    ['Reductieberekening', 'Multiplicatief: 1 - ∏(1 - reductie_i)', 'Voorkomt dubbeltellingen bij meerdere initiatieven'],
-    ['Verschuiving SGGZ→BGGZ', 'Toegepast op resterende SGGZ na reductie', 'Jongeren verschuiven naar lichtere zorg, niet uit zorg'],
-    ['Vaste kosten', 'Eenmalig (niet jaarlijks)', 'Implementatie-, trainings- en opzetkosten'],
-    ['Variabele kosten', 'Jaarlijks terugkerend', 'Afhankelijk van het aantal SGGZ-trajecten'],
-    ['SGGZ-regio volume (ZHZ)', '4.800 jongeren/jaar', '10 gemeenten, ~250.000 inwoners'],
-    ['BGGZ-regio volume (ZHZ)', '3.200 jongeren/jaar', '10 gemeenten, ~250.000 inwoners'],
-    ['SGGZ landelijk volume', '160.000 jongeren/jaar', '390 gemeenten, heel Nederland'],
-    ['BGGZ landelijk volume', '240.000 jongeren/jaar', '390 gemeenten, heel Nederland'],
-  ];
+  // R15: SGGZ cost
+  r = I.SGGZ_COST;
+  setLabel(wsIn, r, 2, 'Kosten per SGGZ-traject');
+  wsIn.getCell(r, 3).value = '\u20AC/traject'; wsIn.getCell(r, 3).font = F.label;
+  setDynamicInput(wsIn, r, I_COL, sggzCost, '\u20AC#,##0');
+  wsIn.getCell(r, 5).value = 'KAM programma'; wsIn.getCell(r, 5).font = F.note;
+  wsIn.getCell(r, 6).value = 'Standaardwaarde \u20AC3.800 (aanpasbaar)'; wsIn.getCell(r, 6).font = F.note;
 
-  for (const [param, value, note] of assumptions) {
-    wsInput.getCell(r, 2).value = param;
-    wsInput.getCell(r, 2).font = FONT.label;
-    wsInput.getCell(r, 3).value = value;
-    wsInput.getCell(r, 3).font = FONT.value;
-    wsInput.getCell(r, 3).alignment = { horizontal: 'right', wrapText: true };
-    wsInput.getCell(r, 5).value = note;
-    wsInput.getCell(r, 5).font = FONT.note;
-    for (let c = 2; c <= 5; c++) {
-      wsInput.getCell(r, c).fill = headerFill(COLORS.assumptionBg);
-      wsInput.getCell(r, c).border = thinBorder(COLORS.assumptionBorder);
-    }
-    r++;
+  // R16: BGGZ cost
+  r = I.BGGZ_COST;
+  setLabel(wsIn, r, 2, 'Kosten per BGGZ-traject');
+  wsIn.getCell(r, 3).value = '\u20AC/traject'; wsIn.getCell(r, 3).font = F.label;
+  setDynamicInput(wsIn, r, I_COL, bggzCost, '\u20AC#,##0');
+  wsIn.getCell(r, 5).value = 'KAM programma'; wsIn.getCell(r, 5).font = F.note;
+  wsIn.getCell(r, 6).value = 'Standaardwaarde \u20AC1.300 (aanpasbaar)'; wsIn.getCell(r, 6).font = F.note;
+
+  // R17: Cost difference (formula)
+  r = I.COST_DIFF;
+  setLabel(wsIn, r, 2, 'Kostenverschil SGGZ - BGGZ');
+  wsIn.getCell(r, 3).value = '\u20AC/traject'; wsIn.getCell(r, 3).font = F.label;
+  setCalcCell(wsIn, r, I_COL, { formula: `${addr(I_COL, I.SGGZ_COST)}-${addr(I_COL, I.BGGZ_COST)}`, result: sggzCost - bggzCost }, '\u20AC#,##0');
+  wsIn.getCell(r, 5).value = 'Berekend'; wsIn.getCell(r, 5).font = F.note;
+
+  // -- Timing & Scale --
+  r = 19;
+  addSectionHeader(wsIn, r, 2, 'Timing & Schaal');
+  r++;
+  addColumnHeaders(wsIn, r, [
+    { col: 2, text: 'Concept' }, { col: 3, text: 'Eenheid' },
+    { col: 4, text: 'Waarde' }, { col: 5, text: 'Bron' }, { col: 6, text: 'Toelichting' },
+  ]);
+
+  // R21: Years
+  r = I.YEARS;
+  setLabel(wsIn, r, 2, 'Looptijd');
+  wsIn.getCell(r, 3).value = 'jaar'; wsIn.getCell(r, 3).font = F.label;
+  setDynamicInput(wsIn, r, I_COL, years);
+  wsIn.getCell(r, 5).value = 'Gebruikersinput'; wsIn.getCell(r, 5).font = F.note;
+
+  // R22: Scale
+  r = I.SCALE;
+  setLabel(wsIn, r, 2, 'Schaal');
+  wsIn.getCell(r, 3).value = '-'; wsIn.getCell(r, 3).font = F.label;
+  setDynamicInput(wsIn, r, I_COL, scaleLabel);
+  wsIn.getCell(r, 5).value = 'Gebruikersinput'; wsIn.getCell(r, 5).font = F.note;
+
+  // -- Initiative Parameters --
+  r = 24;
+  addSectionHeader(wsIn, r, 2, 'Initiatief Parameters');
+
+  // Extend columns for initiative table
+  wsIn.getColumn(7).width = 16;  // G: Fixed cost
+  wsIn.getColumn(8).width = 10;  // H: Active
+  wsIn.getColumn(9).width = 40;  // I: Note
+  wsIn.getColumn(10).width = 3;  // J: spacer
+
+  r = 25;
+  addColumnHeaders(wsIn, r, [
+    { col: IC.NAME, text: 'Initiatief' },
+    { col: IC.SGGZ_RED, text: 'SGGZ red.' },
+    { col: IC.BGGZ_RED, text: 'BGGZ red.' },
+    { col: IC.SHIFT, text: 'SGGZ\u2192BGGZ' },
+    { col: IC.VAR_COST, text: 'Var.kst/traject' },
+    { col: IC.FIXED_COST, text: `Vaste kst (${scale})` },
+    { col: IC.ACTIVE, text: 'Actief' },
+    { col: IC.NOTE, text: 'Toelichting kosten' },
+  ]);
+
+  // R27-R31: Initiative data rows
+  for (let idx = 0; idx < allInitiatives.length; idx++) {
+    const init = allInitiatives[idx];
+    const row = I.INIT_FIRST + idx;
+    const isActive = selectedInitiativeIds.includes(init.id);
+
+    setLabel(wsIn, row, IC.NAME, init.name);
+    setStaticInput(wsIn, row, IC.SGGZ_RED, init.sggzReductionPct / 100, '0%');
+    setStaticInput(wsIn, row, IC.BGGZ_RED, init.bggzReductionPct / 100, '0%');
+    setStaticInput(wsIn, row, IC.SHIFT, init.sggzToBggzShiftPct / 100, '0%');
+    setStaticInput(wsIn, row, IC.VAR_COST, init.costPerSggzYouth, '\u20AC#,##0');
+    setStaticInput(wsIn, row, IC.FIXED_COST, init[fixedCostKey], '\u20AC#,##0');
+
+    // Active flag — dynamic input (yellow bg)
+    setDynamicInput(wsIn, row, IC.ACTIVE, isActive ? 1 : 0);
+
+    wsIn.getCell(row, IC.NOTE).value = init.costNote;
+    wsIn.getCell(row, IC.NOTE).font = F.note;
+    wsIn.getCell(row, IC.NOTE).alignment = { wrapText: true, vertical: 'middle' };
+    wsIn.getRow(row).height = 26;
   }
-
-  // Disclaimer
-  r += 2;
-  wsInput.mergeCells(r, 2, r + 2, 5);
-  const disclaimerCell = wsInput.getCell(r, 2);
-  disclaimerCell.value = 'Let op: Alle schattingen zijn indicatief en gebaseerd op regionale gemiddelden en aannames uit het programma Kwaliteit als Medicijn in Zuid-Holland Zuid. De daadwerkelijke resultaten kunnen afwijken afhankelijk van de specifieke context, implementatiekwaliteit en patiëntenpopulatie.';
-  disclaimerCell.font = FONT.note;
-  disclaimerCell.alignment = { wrapText: true, vertical: 'top' };
 
   // ================================================================
-  //  SHEET 3: INITIATIEVEN
+  //  SHEET: 2. IMPACT MODEL (all formulas reference Input)
   // ================================================================
-  const wsInit = wb.addWorksheet('Initiatieven', { properties: { tabColor: { argb: 'A855F7' } } });
-  wsInit.columns = [
-    { width: 4 },
-    { width: 34 },
-    { width: 36 },
-    { width: 14 },
-    { width: 14 },
-    { width: 16 },
-    { width: 16 },
-    { width: 18 },
-    { width: 40 },
-    { width: 4 },
+  const wsIm = wb.addWorksheet(SN.IMPACT, { properties: { tabColor: { argb: C.BORDEAUX } } });
+  wsIm.columns = [
+    { width: 3 },  // A
+    { width: 40 }, // B
+    { width: 14 }, // C
+    { width: 18 }, // D (values)
+    { width: 36 }, // E (formula explanation)
+    { width: 3 },  // F
   ];
+
+  const INP = SN.INPUT; // shorthand for formula refs
 
   r = 2;
-  wsInit.mergeCells(r, 2, r, 9);
-  styleHeaderRow(wsInit, r, 2, 9);
-  wsInit.getCell(r, 2).value = 'INITIATIEVEN — KWALITEIT ALS MEDICIJN';
-  wsInit.getRow(r).height = 30;
-
-  r += 2;
-  const initHeaders = ['Initiatief', 'Beschrijving', 'SGGZ-reductie', 'BGGZ-reductie', 'SGGZ→BGGZ shift', 'Var. kosten/traject', `Vaste kosten (${scale})`, 'Kostentoelichting'];
-  for (let c = 0; c < initHeaders.length; c++) {
-    const cell = wsInit.getCell(r, c + 2);
-    cell.value = initHeaders[c];
-    cell.font = { ...FONT.label, bold: true, color: { argb: COLORS.headerFont } };
-    cell.fill = headerFill(COLORS.headerBg);
-    cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
-    cell.border = thinBorder(COLORS.headerBg);
-  }
-  wsInit.getRow(r).height = 28;
+  wsIm.getCell(r, 2).value = '2. Impact Model';
+  wsIm.getCell(r, 2).font = { name: 'Arial', size: 14, bold: true, color: { argb: C.BLACK } };
   r++;
+  addBar(wsIm, r, 1, 6);
 
-  for (const init of allInitiatives) {
-    const isSelected = selectedInitiativeIds.includes(init.id);
-    const bg = isSelected ? COLORS.outputBg : COLORS.white;
-    const border = isSelected ? COLORS.outputBorder : COLORS.subtleBorder;
-    const fixedCost = init[fixedCostKey];
+  // ---- 1. Combined Reduction Percentages ----
+  r = 6;
+  addSectionHeader(wsIm, r, 2, '1. Gecombineerde Reductiepercentages');
+  wsIm.getCell(r + 1, 2).value = 'Formule: 1 - \u220F(1 - reductie_i)  — voorkomt dubbeltellingen';
+  wsIm.getCell(r + 1, 2).font = F.note;
 
-    const rowData = [
-      `${isSelected ? '✓ ' : ''}${init.name}`,
-      init.description,
-      init.sggzReductionPct / 100,
-      init.bggzReductionPct / 100,
-      init.sggzToBggzShiftPct / 100,
-      init.costPerSggzYouth,
-      fixedCost,
-      init.costNote,
-    ];
+  // 1.1 SGGZ
+  r = M.SGGZ_H_START - 1;
+  addSubSection(wsIm, r, 2, '1.1 SGGZ Reductie');
+  addColumnHeaders(wsIm, r, [{ col: 3, text: 'Red. %' }, { col: 4, text: '(1-red) of 1' }]);
+  wsIm.getCell(r, 5).value = 'Formule'; wsIm.getCell(r, 5).font = F.note;
 
-    for (let c = 0; c < rowData.length; c++) {
-      const cell = wsInit.getCell(r, c + 2);
-      cell.value = rowData[c];
-      cell.fill = headerFill(bg);
-      cell.border = thinBorder(border);
-      cell.alignment = { vertical: 'middle', wrapText: true };
-
-      if (c === 0) cell.font = isSelected ? { ...FONT.value, color: { argb: COLORS.accentGreen } } : FONT.value;
-      else if (c === 1 || c === 7) cell.font = FONT.label;
-      else {
-        cell.font = FONT.value;
-        cell.alignment = { horizontal: 'right', vertical: 'middle' };
-      }
-
-      if (c === 2 || c === 3 || c === 4) cell.numFmt = '0%';
-      if (c === 5 || c === 6) cell.numFmt = '€#,##0';
-    }
-    wsInit.getRow(r).height = 32;
-    r++;
+  for (let idx = 0; idx < 5; idx++) {
+    const row = M.SGGZ_H_START + idx;
+    const initRow = I.INIT_FIRST + idx;
+    setLabel(wsIm, row, 2, allInitiatives[idx].name);
+    setInfoCell(wsIm, row, 3, allInitiatives[idx].sggzReductionPct / 100, '0%');
+    // Formula: IF(active=1, 1-reduction, 1)
+    const formula = `IF(${ref(INP, IC.ACTIVE, initRow)}=1, 1-${ref(INP, IC.SGGZ_RED, initRow)}, 1)`;
+    const active = selectedInitiativeIds.includes(allInitiatives[idx].id);
+    const result = active ? 1 - allInitiatives[idx].sggzReductionPct / 100 : 1;
+    setCalcCell(wsIm, row, M_COL, { formula, result }, '0.000');
+    wsIm.getCell(row, 5).value = `=IF('${INP}'!${addr(IC.ACTIVE, initRow)}=1, 1-'${INP}'!${addr(IC.SGGZ_RED, initRow)}, 1)`;
+    wsIm.getCell(row, 5).font = F.note;
   }
 
-  // Add note about selection
-  r += 2;
-  wsInit.mergeCells(r, 2, r, 9);
-  const selNote = wsInit.getCell(r, 2);
-  selNote.value = `Geselecteerde initiatieven zijn groen gemarkeerd met een ✓. Er zijn ${selected.length} van ${allInitiatives.length} initiatieven geselecteerd.`;
-  selNote.font = FONT.note;
+  r = M.SGGZ_PRODUCT;
+  setLabel(wsIm, r, 2, 'Product');
+  const sggzProdFormula = `PRODUCT(${addr(M_COL, M.SGGZ_H_START)}:${addr(M_COL, M.SGGZ_H_START + 4)})`;
+  setCalcCell(wsIm, r, M_COL, { formula: sggzProdFormula, result: 1 - combinedSggzRed }, '0.0000');
+
+  r = M.SGGZ_COMBINED;
+  setLabel(wsIm, r, 2, 'Gecombineerde SGGZ-reductie');
+  setCalcCell(wsIm, r, M_COL, { formula: `1-${addr(M_COL, M.SGGZ_PRODUCT)}`, result: combinedSggzRed }, '0.0%');
+  wsIm.getCell(r, 2).font = { ...F.label, bold: true };
+
+  // 1.2 BGGZ
+  r = M.BGGZ_H_START - 1;
+  addSubSection(wsIm, r, 2, '1.2 BGGZ Reductie');
+  addColumnHeaders(wsIm, r, [{ col: 3, text: 'Red. %' }, { col: 4, text: '(1-red) of 1' }]);
+
+  for (let idx = 0; idx < 5; idx++) {
+    const row = M.BGGZ_H_START + idx;
+    const initRow = I.INIT_FIRST + idx;
+    setLabel(wsIm, row, 2, allInitiatives[idx].name);
+    setInfoCell(wsIm, row, 3, allInitiatives[idx].bggzReductionPct / 100, '0%');
+    const formula = `IF(${ref(INP, IC.ACTIVE, initRow)}=1, 1-${ref(INP, IC.BGGZ_RED, initRow)}, 1)`;
+    const active = selectedInitiativeIds.includes(allInitiatives[idx].id);
+    const result = active ? 1 - allInitiatives[idx].bggzReductionPct / 100 : 1;
+    setCalcCell(wsIm, row, M_COL, { formula, result }, '0.000');
+  }
+
+  r = M.BGGZ_PRODUCT;
+  setLabel(wsIm, r, 2, 'Product');
+  setCalcCell(wsIm, r, M_COL, { formula: `PRODUCT(${addr(M_COL, M.BGGZ_H_START)}:${addr(M_COL, M.BGGZ_H_START + 4)})`, result: 1 - combinedBggzRed }, '0.0000');
+
+  r = M.BGGZ_COMBINED;
+  setLabel(wsIm, r, 2, 'Gecombineerde BGGZ-reductie');
+  setCalcCell(wsIm, r, M_COL, { formula: `1-${addr(M_COL, M.BGGZ_PRODUCT)}`, result: combinedBggzRed }, '0.0%');
+  wsIm.getCell(r, 2).font = { ...F.label, bold: true };
+
+  // 1.3 Shift
+  r = M.SHIFT_H_START - 1;
+  addSubSection(wsIm, r, 2, '1.3 SGGZ\u2192BGGZ Verschuiving');
+  addColumnHeaders(wsIm, r, [{ col: 3, text: 'Shift %' }, { col: 4, text: '(1-shift) of 1' }]);
+
+  for (let idx = 0; idx < 5; idx++) {
+    const row = M.SHIFT_H_START + idx;
+    const initRow = I.INIT_FIRST + idx;
+    setLabel(wsIm, row, 2, allInitiatives[idx].name);
+    setInfoCell(wsIm, row, 3, allInitiatives[idx].sggzToBggzShiftPct / 100, '0%');
+    const formula = `IF(${ref(INP, IC.ACTIVE, initRow)}=1, 1-${ref(INP, IC.SHIFT, initRow)}, 1)`;
+    const active = selectedInitiativeIds.includes(allInitiatives[idx].id);
+    const result = active ? 1 - allInitiatives[idx].sggzToBggzShiftPct / 100 : 1;
+    setCalcCell(wsIm, row, M_COL, { formula, result }, '0.000');
+  }
+
+  r = M.SHIFT_PRODUCT;
+  setLabel(wsIm, r, 2, 'Product');
+  setCalcCell(wsIm, r, M_COL, { formula: `PRODUCT(${addr(M_COL, M.SHIFT_H_START)}:${addr(M_COL, M.SHIFT_H_START + 4)})`, result: 1 - combinedShift }, '0.0000');
+
+  r = M.SHIFT_COMBINED;
+  setLabel(wsIm, r, 2, 'Gecombineerde SGGZ\u2192BGGZ verschuiving');
+  setCalcCell(wsIm, r, M_COL, { formula: `1-${addr(M_COL, M.SHIFT_PRODUCT)}`, result: combinedShift }, '0.0%');
+  wsIm.getCell(r, 2).font = { ...F.label, bold: true };
+
+  // ---- 2. Volume Effects (per year) ----
+  r = 41;
+  addSectionHeader(wsIm, r, 2, '2. Volume-effecten (per jaar)');
+  r++;
+  addColumnHeaders(wsIm, r, [{ col: 3, text: 'Eenheid' }, { col: 4, text: 'Waarde' }]);
+  wsIm.getCell(r, 5).value = 'Formule'; wsIm.getCell(r, 5).font = F.note;
+
+  // SGGZ volume (input ref)
+  r = M.VOL_SGGZ;
+  setLabel(wsIm, r, 2, 'SGGZ-volume');
+  wsIm.getCell(r, 3).value = 'jongeren/jaar'; wsIm.getCell(r, 3).font = F.label;
+  setCalcCell(wsIm, r, M_COL, { formula: ref(INP, I_COL, I.SGGZ_VOL), result: sggzVolume }, '#,##0');
+  wsIm.getCell(r, 5).value = `= ${SN.INPUT}!${addr(I_COL, I.SGGZ_VOL)}`; wsIm.getCell(r, 5).font = F.note;
+
+  // SGGZ reduced
+  r = M.VOL_SGGZ_REDUCED;
+  setLabel(wsIm, r, 2, 'SGGZ gereduceerd');
+  wsIm.getCell(r, 3).value = 'jongeren/jaar'; wsIm.getCell(r, 3).font = F.label;
+  setCalcCell(wsIm, r, M_COL, { formula: `ROUND(${addr(M_COL, M.VOL_SGGZ)}*${addr(M_COL, M.SGGZ_COMBINED)},0)`, result: sggzReduced }, '#,##0');
+  wsIm.getCell(r, 5).value = '= ROUND(SGGZ-volume * gecomb. reductie, 0)'; wsIm.getCell(r, 5).font = F.note;
+
+  // SGGZ remaining
+  r = M.VOL_SGGZ_REMAINING;
+  setLabel(wsIm, r, 2, 'SGGZ resterend na reductie');
+  wsIm.getCell(r, 3).value = 'jongeren/jaar'; wsIm.getCell(r, 3).font = F.label;
+  setCalcCell(wsIm, r, M_COL, { formula: `${addr(M_COL, M.VOL_SGGZ)}-${addr(M_COL, M.VOL_SGGZ_REDUCED)}`, result: sggzRemaining }, '#,##0');
+
+  // Shifted to BGGZ
+  r = M.VOL_SHIFTED;
+  setLabel(wsIm, r, 2, 'Verschoven naar BGGZ');
+  wsIm.getCell(r, 3).value = 'jongeren/jaar'; wsIm.getCell(r, 3).font = F.label;
+  setCalcCell(wsIm, r, M_COL, { formula: `ROUND(${addr(M_COL, M.VOL_SGGZ_REMAINING)}*${addr(M_COL, M.SHIFT_COMBINED)},0)`, result: shiftedToBggz }, '#,##0');
+  wsIm.getCell(r, 5).value = '= ROUND(SGGZ-resterend * gecomb. verschuiving, 0)'; wsIm.getCell(r, 5).font = F.note;
+
+  // BGGZ volume (input ref)
+  r = M.VOL_BGGZ;
+  setLabel(wsIm, r, 2, 'BGGZ-volume');
+  wsIm.getCell(r, 3).value = 'jongeren/jaar'; wsIm.getCell(r, 3).font = F.label;
+  setCalcCell(wsIm, r, M_COL, { formula: ref(INP, I_COL, I.BGGZ_VOL), result: bggzVolume }, '#,##0');
+
+  // BGGZ reduced
+  r = M.VOL_BGGZ_REDUCED;
+  setLabel(wsIm, r, 2, 'BGGZ gereduceerd');
+  wsIm.getCell(r, 3).value = 'jongeren/jaar'; wsIm.getCell(r, 3).font = F.label;
+  setCalcCell(wsIm, r, M_COL, { formula: `ROUND(${addr(M_COL, M.VOL_BGGZ)}*${addr(M_COL, M.BGGZ_COMBINED)},0)`, result: bggzReduced }, '#,##0');
+
+  // ---- 3. Cost Savings per year ----
+  r = 50;
+  addSectionHeader(wsIm, r, 2, '3. Kostenbesparing (per jaar)');
+  r++;
+  addColumnHeaders(wsIm, r, [{ col: 4, text: '\u20AC/jaar' }]);
+  wsIm.getCell(r, 5).value = 'Formule'; wsIm.getCell(r, 5).font = F.note;
+
+  // SGGZ direct savings
+  r = M.SAVE_SGGZ_DIRECT;
+  setLabel(wsIm, r, 2, 'SGGZ-besparing (directe reductie)');
+  setCalcCell(wsIm, r, M_COL, { formula: `${addr(M_COL, M.VOL_SGGZ_REDUCED)}*${ref(INP, I_COL, I.SGGZ_COST)}`, result: sggzReduced * sggzCost }, '\u20AC#,##0');
+  wsIm.getCell(r, 5).value = '= SGGZ gereduceerd * kosten per SGGZ-traject'; wsIm.getCell(r, 5).font = F.note;
+
+  // Shift savings
+  r = M.SAVE_SHIFT;
+  setLabel(wsIm, r, 2, 'Verschuivingsbesparing (SGGZ\u2192BGGZ)');
+  setCalcCell(wsIm, r, M_COL, { formula: `${addr(M_COL, M.VOL_SHIFTED)}*${ref(INP, I_COL, I.COST_DIFF)}`, result: shiftedToBggz * (sggzCost - bggzCost) }, '\u20AC#,##0');
+  wsIm.getCell(r, 5).value = '= Verschoven * (SGGZ-kost - BGGZ-kost)'; wsIm.getCell(r, 5).font = F.note;
+
+  // SGGZ total
+  r = M.SAVE_SGGZ_TOTAL;
+  setLabel(wsIm, r, 2, 'Totaal SGGZ-gerelateerde besparing');
+  setTotalCell(wsIm, r, M_COL, { formula: `${addr(M_COL, M.SAVE_SGGZ_DIRECT)}+${addr(M_COL, M.SAVE_SHIFT)}`, result: sggzSavingsPerYear }, '\u20AC#,##0');
+
+  // BGGZ savings
+  r = M.SAVE_BGGZ;
+  setLabel(wsIm, r, 2, 'BGGZ-besparing');
+  setCalcCell(wsIm, r, M_COL, { formula: `${addr(M_COL, M.VOL_BGGZ_REDUCED)}*${ref(INP, I_COL, I.BGGZ_COST)}`, result: bggzSavingsPerYear }, '\u20AC#,##0');
+
+  // Total savings per year
+  r = M.SAVE_TOTAL;
+  setLabel(wsIm, r, 2, 'Totale besparing per jaar');
+  wsIm.getCell(r, 2).font = { ...F.label, bold: true };
+  setTotalCell(wsIm, r, M_COL, { formula: `${addr(M_COL, M.SAVE_SGGZ_TOTAL)}+${addr(M_COL, M.SAVE_BGGZ)}`, result: totalSavingsPerYear }, '\u20AC#,##0');
+
+  // ---- 4. Investment ----
+  r = 58;
+  addSectionHeader(wsIm, r, 2, '4. Investering');
+  r++;
+  addColumnHeaders(wsIm, r, [{ col: 4, text: '\u20AC' }]);
+
+  // Fixed costs (SUMPRODUCT)
+  r = M.INV_FIXED;
+  setLabel(wsIm, r, 2, 'Vaste kosten (implementatie)');
+  setCalcCell(wsIm, r, M_COL, {
+    formula: `SUMPRODUCT(${ref(INP, IC.FIXED_COST, I.INIT_FIRST)}:${ref(INP, IC.FIXED_COST, I.INIT_LAST)},${ref(INP, IC.ACTIVE, I.INIT_FIRST)}:${ref(INP, IC.ACTIVE, I.INIT_LAST)})`,
+    result: fixedCosts,
+  }, '\u20AC#,##0');
+  wsIm.getCell(r, 5).value = '= SUMPRODUCT(vaste kosten * actief vlag)'; wsIm.getCell(r, 5).font = F.note;
+
+  // Variable costs per year (SUMPRODUCT * SGGZ volume)
+  r = M.INV_VARIABLE;
+  setLabel(wsIm, r, 2, 'Variabele kosten per jaar');
+  setCalcCell(wsIm, r, M_COL, {
+    formula: `SUMPRODUCT(${ref(INP, IC.VAR_COST, I.INIT_FIRST)}:${ref(INP, IC.VAR_COST, I.INIT_LAST)},${ref(INP, IC.ACTIVE, I.INIT_FIRST)}:${ref(INP, IC.ACTIVE, I.INIT_LAST)})*${ref(INP, I_COL, I.SGGZ_VOL)}`,
+    result: variableCostsPerYear,
+  }, '\u20AC#,##0');
+  wsIm.getCell(r, 5).value = '= SUMPRODUCT(var kst * actief) * SGGZ-volume'; wsIm.getCell(r, 5).font = F.note;
+
+  // Total investment
+  r = M.INV_TOTAL;
+  setLabel(wsIm, r, 2, 'Totale investering');
+  wsIm.getCell(r, 2).font = { ...F.label, bold: true };
+  setTotalCell(wsIm, r, M_COL, {
+    formula: `${addr(M_COL, M.INV_FIXED)}+${addr(M_COL, M.INV_VARIABLE)}*${ref(INP, I_COL, I.YEARS)}`,
+    result: totalInvestment,
+  }, '\u20AC#,##0');
+  wsIm.getCell(r, 5).value = '= Vast + Variabel * Looptijd'; wsIm.getCell(r, 5).font = F.note;
+
+  // Net savings per year
+  r = M.NET_SAVINGS;
+  setLabel(wsIm, r, 2, 'Netto besparing per jaar');
+  wsIm.getCell(r, 2).font = { ...F.label, bold: true };
+  setTotalCell(wsIm, r, M_COL, {
+    formula: `${addr(M_COL, M.SAVE_TOTAL)}-${addr(M_COL, M.INV_VARIABLE)}`,
+    result: netSavingsPerYear,
+  }, '\u20AC#,##0');
 
   // ================================================================
-  //  SHEET 4: BEREKENINGEN (step-by-step with formulas in comments)
+  //  SHEET: 3. FINANCIEEL MODEL (year-by-year with formulas)
   // ================================================================
-  const wsCalc = wb.addWorksheet('Berekeningen', { properties: { tabColor: { argb: '059669' } } });
-  wsCalc.columns = [
-    { width: 4 },
-    { width: 42 },
-    { width: 20 },
-    { width: 14 },
-    { width: 36 },
-    { width: 4 },
-  ];
+  const wsFin = wb.addWorksheet(SN.FIN, { properties: { tabColor: { argb: C.BORDEAUX } } });
+
+  // Columns: A(spacer) B(label) C(Yr0) D(Yr1) ... (YrN) Total
+  const yearCols: number[] = []; // column indices for Year 0 through Year N
+  for (let y = 0; y <= years; y++) yearCols.push(3 + y);
+  const totalCol = 3 + years + 1;
+
+  wsFin.getColumn(1).width = 3;
+  wsFin.getColumn(2).width = 36;
+  for (let y = 0; y <= years; y++) wsFin.getColumn(3 + y).width = 14;
+  wsFin.getColumn(totalCol).width = 16;
+  wsFin.getColumn(totalCol + 1).width = 3;
+
+  const IMP = SN.IMPACT; // shorthand
 
   r = 2;
-  wsCalc.mergeCells(r, 2, r, 5);
-  styleHeaderRow(wsCalc, r, 2, 5);
-  wsCalc.getCell(r, 2).value = 'BEREKENINGEN — STAP VOOR STAP';
-  wsCalc.getRow(r).height = 30;
-
-  // Step 1: Gecombineerde reductiepercentages
-  r += 2;
-  styleSectionTitle(wsCalc, r, 2, 4);
-  wsCalc.getCell(r, 2).value = 'Stap 1: Gecombineerde reductiepercentages';
+  wsFin.getCell(r, 2).value = '3. Financieel Model';
+  wsFin.getCell(r, 2).font = { name: 'Arial', size: 14, bold: true, color: { argb: C.BLACK } };
   r++;
-  wsCalc.getCell(r, 2).value = 'Formule: 1 - ∏(1 - reductie_i)  (voorkomt dubbeltellingen)';
-  wsCalc.getCell(r, 2).font = FONT.note;
-  r += 2;
+  addBar(wsFin, r, 1, totalCol + 1);
 
-  // Show the multiplication steps for SGGZ
-  wsCalc.getCell(r, 2).value = 'SGGZ-reductie per initiatief:';
-  wsCalc.getCell(r, 2).font = { ...FONT.label, bold: true };
-  r++;
-  let sggzProduct = 1;
-  for (const init of selected) {
-    wsCalc.getCell(r, 2).value = `  ${init.name}`;
-    wsCalc.getCell(r, 2).font = FONT.label;
-    wsCalc.getCell(r, 3).value = init.sggzReductionPct / 100;
-    wsCalc.getCell(r, 3).numFmt = '0%';
-    wsCalc.getCell(r, 3).font = FONT.value;
-    wsCalc.getCell(r, 3).alignment = { horizontal: 'right' };
-    wsCalc.getCell(r, 4).value = `(1 - ${init.sggzReductionPct}%) = ${((1 - init.sggzReductionPct / 100) * 100).toFixed(1)}%`;
-    wsCalc.getCell(r, 4).font = FONT.note;
-    sggzProduct *= (1 - init.sggzReductionPct / 100);
-    r++;
-  }
-  r++;
-  wsCalc.getCell(r, 2).value = 'Product van (1 - reductie_i):';
-  wsCalc.getCell(r, 2).font = FONT.label;
-  wsCalc.getCell(r, 3).value = sggzProduct;
-  wsCalc.getCell(r, 3).numFmt = '0.000%';
-  wsCalc.getCell(r, 3).font = FONT.value;
-  wsCalc.getCell(r, 3).alignment = { horizontal: 'right' };
-  r++;
-  setLabelValue(wsCalc, r, 2, 3, 'Gecombineerde SGGZ-reductie (1 - product)', combinedSggzReduction, { isPercentage: true, bgColor: COLORS.outputBg, borderColor: COLORS.outputBorder });
-  r += 2;
-
-  // BGGZ
-  wsCalc.getCell(r, 2).value = 'BGGZ-reductie per initiatief:';
-  wsCalc.getCell(r, 2).font = { ...FONT.label, bold: true };
-  r++;
-  for (const init of selected) {
-    wsCalc.getCell(r, 2).value = `  ${init.name}`;
-    wsCalc.getCell(r, 2).font = FONT.label;
-    wsCalc.getCell(r, 3).value = init.bggzReductionPct / 100;
-    wsCalc.getCell(r, 3).numFmt = '0%';
-    wsCalc.getCell(r, 3).font = FONT.value;
-    wsCalc.getCell(r, 3).alignment = { horizontal: 'right' };
-    r++;
-  }
-  r++;
-  setLabelValue(wsCalc, r, 2, 3, 'Gecombineerde BGGZ-reductie', combinedBggzReduction, { isPercentage: true, bgColor: COLORS.outputBg, borderColor: COLORS.outputBorder });
-
-  r += 2;
-  wsCalc.getCell(r, 2).value = 'SGGZ→BGGZ verschuiving per initiatief:';
-  wsCalc.getCell(r, 2).font = { ...FONT.label, bold: true };
-  r++;
-  for (const init of selected) {
-    wsCalc.getCell(r, 2).value = `  ${init.name}`;
-    wsCalc.getCell(r, 2).font = FONT.label;
-    wsCalc.getCell(r, 3).value = init.sggzToBggzShiftPct / 100;
-    wsCalc.getCell(r, 3).numFmt = '0%';
-    wsCalc.getCell(r, 3).font = FONT.value;
-    wsCalc.getCell(r, 3).alignment = { horizontal: 'right' };
-    r++;
-  }
-  r++;
-  setLabelValue(wsCalc, r, 2, 3, 'Gecombineerde SGGZ→BGGZ verschuiving', combinedShift, { isPercentage: true, bgColor: COLORS.outputBg, borderColor: COLORS.outputBorder });
-
-  // Step 2: Volume-effecten
-  r += 3;
-  styleSectionTitle(wsCalc, r, 2, 4);
-  wsCalc.getCell(r, 2).value = 'Stap 2: Volume-effecten (per jaar)';
-  r += 2;
-
-  const volumeCalcs: [string, number, string][] = [
-    ['SGGZ-volume', sggzVolume, 'Input'],
-    ['SGGZ gereduceerd', sggzReduced, `= ${sggzVolume} × ${(combinedSggzReduction * 100).toFixed(1)}% = ${sggzReduced}`],
-    ['SGGZ resterend na reductie', sggzRemaining, `= ${sggzVolume} - ${sggzReduced} = ${sggzRemaining}`],
-    ['Verschoven naar BGGZ', shiftedToBggz, `= ${sggzRemaining} × ${(combinedShift * 100).toFixed(1)}% = ${shiftedToBggz}`],
-    ['BGGZ-volume', bggzVolume, 'Input'],
-    ['BGGZ gereduceerd', bggzReduced, `= ${bggzVolume} × ${(combinedBggzReduction * 100).toFixed(1)}% = ${bggzReduced}`],
-  ];
-
-  for (const [label, value, formula] of volumeCalcs) {
-    const isInput = formula === 'Input';
-    wsCalc.getCell(r, 2).value = label;
-    wsCalc.getCell(r, 2).font = FONT.label;
-    wsCalc.getCell(r, 3).value = value;
-    wsCalc.getCell(r, 3).font = FONT.value;
-    wsCalc.getCell(r, 3).alignment = { horizontal: 'right' };
-    wsCalc.getCell(r, 3).numFmt = '#,##0';
-    wsCalc.getCell(r, 5).value = formula;
-    wsCalc.getCell(r, 5).font = FONT.note;
-    for (let c = 2; c <= 3; c++) {
-      wsCalc.getCell(r, c).fill = headerFill(isInput ? COLORS.inputBg : COLORS.outputBg);
-      wsCalc.getCell(r, c).border = thinBorder(isInput ? COLORS.inputBorder : COLORS.outputBorder);
-    }
-    r++;
-  }
-
-  // Step 3: Kostenbesparing per jaar
-  r += 2;
-  styleSectionTitle(wsCalc, r, 2, 4);
-  wsCalc.getCell(r, 2).value = 'Stap 3: Kostenbesparing (per jaar)';
-  r += 2;
-
-  const costCalcs: [string, number, string][] = [
-    ['SGGZ-besparing (directe reductie)', sggzReduced * sggzCost, `= ${sggzReduced} trajecten × €${sggzCost} = ${euroFormat(sggzReduced * sggzCost)}`],
-    ['Verschuivingsbesparing (SGGZ→BGGZ)', shiftedToBggz * (sggzCost - bggzCost), `= ${shiftedToBggz} × (€${sggzCost} - €${bggzCost}) = ${euroFormat(shiftedToBggz * (sggzCost - bggzCost))}`],
-    ['Totaal SGGZ-gerelateerde besparing', sggzSavingsPerYear, `= ${euroFormat(sggzReduced * sggzCost)} + ${euroFormat(shiftedToBggz * (sggzCost - bggzCost))}`],
-    ['BGGZ-besparing', bggzSavingsPerYear, `= ${bggzReduced} trajecten × €${bggzCost} = ${euroFormat(bggzSavingsPerYear)}`],
-    ['Totale besparing per jaar', totalSavingsPerYear, `= ${euroFormat(sggzSavingsPerYear)} + ${euroFormat(bggzSavingsPerYear)}`],
-  ];
-
-  for (const [label, value, formula] of costCalcs) {
-    const isTotal = label.startsWith('Totaal') || label.startsWith('Totale');
-    wsCalc.getCell(r, 2).value = label;
-    wsCalc.getCell(r, 2).font = isTotal ? { ...FONT.value, bold: true } : FONT.label;
-    wsCalc.getCell(r, 3).value = value;
-    wsCalc.getCell(r, 3).font = isTotal ? { ...FONT.valueLarge, color: { argb: COLORS.accentGreen } } : FONT.value;
-    wsCalc.getCell(r, 3).numFmt = '€#,##0';
-    wsCalc.getCell(r, 3).alignment = { horizontal: 'right' };
-    wsCalc.getCell(r, 5).value = formula;
-    wsCalc.getCell(r, 5).font = FONT.note;
-    for (let c = 2; c <= 3; c++) {
-      wsCalc.getCell(r, c).fill = headerFill(COLORS.outputBg);
-      wsCalc.getCell(r, c).border = thinBorder(COLORS.outputBorder);
-    }
-    r++;
-  }
-
-  // Step 4: Investering
-  r += 2;
-  styleSectionTitle(wsCalc, r, 2, 4);
-  wsCalc.getCell(r, 2).value = 'Stap 4: Investering';
-  r += 2;
-
-  setLabelValue(wsCalc, r, 2, 3, 'Vaste kosten (implementatie)', fixedCosts, { isCurrency: true, bgColor: COLORS.assumptionBg, borderColor: COLORS.assumptionBorder, note: 'Eenmalige kosten: training, opzet, coördinatie, methodiek-implementatie' });
-  r++;
-  for (const init of selected) {
-    if (init.costPerSggzYouth > 0) {
-      wsCalc.getCell(r, 2).value = `  Variabel: ${init.name}`;
-      wsCalc.getCell(r, 2).font = FONT.label;
-      wsCalc.getCell(r, 3).value = init.costPerSggzYouth * sggzVolume;
-      wsCalc.getCell(r, 3).numFmt = '€#,##0';
-      wsCalc.getCell(r, 3).font = FONT.value;
-      wsCalc.getCell(r, 3).alignment = { horizontal: 'right' };
-      wsCalc.getCell(r, 5).value = `= ${sggzVolume} trajecten × €${init.costPerSggzYouth}/traject`;
-      wsCalc.getCell(r, 5).font = FONT.note;
-      for (let c = 2; c <= 3; c++) {
-        wsCalc.getCell(r, c).fill = headerFill(COLORS.assumptionBg);
-        wsCalc.getCell(r, c).border = thinBorder(COLORS.assumptionBorder);
-      }
-      r++;
-    }
-  }
-  setLabelValue(wsCalc, r, 2, 3, 'Variabele kosten per jaar (totaal)', variableCostsPerYear, { isCurrency: true, bgColor: COLORS.assumptionBg, borderColor: COLORS.assumptionBorder });
-  r++;
-  setLabelValue(wsCalc, r, 2, 3, `Totale investering (${years} jaar)`, totalInvestment, { isCurrency: true, bgColor: COLORS.outputBg, borderColor: COLORS.outputBorder, note: `= Vast (${euroFormat(fixedCosts)}) + Variabel (${euroFormat(variableCostsPerYear)}) × ${years} jaar` });
-
-  // ================================================================
-  //  SHEET 5: FINANCIEEL MODEL (year-by-year with Excel formulas)
-  // ================================================================
-  const wsFin = wb.addWorksheet('Financieel Model', { properties: { tabColor: { argb: '0EA5E9' } } });
-  wsFin.columns = [
-    { width: 4 },   // A
-    { width: 36 },  // B
-  ];
-  // Add year columns
-  for (let y = 0; y <= years; y++) {
-    wsFin.getColumn(3 + y).width = 16;
-  }
-  // Extra column for totaal
-  wsFin.getColumn(3 + years + 1).width = 18;
-
-  r = 2;
-  wsFin.mergeCells(r, 2, r, 3 + years + 1);
-  styleHeaderRow(wsFin, r, 2, 3 + years + 1);
-  wsFin.getCell(r, 2).value = 'FINANCIEEL MODEL — JAAROVERZICHT';
-  wsFin.getRow(r).height = 30;
-
-  r += 2;
   // Year headers
+  r = 6;
   wsFin.getCell(r, 2).value = '';
-  wsFin.getCell(r, 2).font = { ...FONT.label, bold: true };
   for (let y = 0; y <= years; y++) {
-    const cell = wsFin.getCell(r, 3 + y);
-    cell.value = y === 0 ? 'Jaar 0 (start)' : `Jaar ${y}`;
-    cell.font = { ...FONT.label, bold: true, color: { argb: COLORS.headerFont } };
-    cell.fill = headerFill(COLORS.headerBg);
+    const col = yearCols[y];
+    const cell = wsFin.getCell(r, col);
+    cell.value = y === 0 ? 'Jaar 0' : `Jaar ${y}`;
+    cell.font = F.headerCol;
+    cell.fill = solidFill(C.BORDEAUX);
     cell.alignment = { horizontal: 'center' };
-    cell.border = thinBorder(COLORS.headerBg);
   }
-  const totColIdx = 3 + years + 1;
-  const totCell = wsFin.getCell(r, totColIdx);
-  totCell.value = 'TOTAAL';
-  totCell.font = { ...FONT.label, bold: true, color: { argb: COLORS.headerFont } };
-  totCell.fill = headerFill(COLORS.accentPurple);
-  totCell.alignment = { horizontal: 'center' };
-  totCell.border = thinBorder(COLORS.accentPurple);
+  const totHeader = wsFin.getCell(r, totalCol);
+  totHeader.value = 'Totaal';
+  totHeader.font = F.headerCol;
+  totHeader.fill = solidFill(C.BORDEAUX);
+  totHeader.alignment = { horizontal: 'center' };
+  wsFin.getRow(r).height = 22;
 
-  // Helper to add a financial row
-  const addFinRow = (label: string, yearValues: number[], total: number, options?: { isBold?: boolean; bgColor?: string; borderColor?: string; isNegative?: boolean }) => {
-    r++;
-    wsFin.getCell(r, 2).value = label;
-    wsFin.getCell(r, 2).font = options?.isBold ? { ...FONT.value, bold: true } : FONT.label;
-    if (options?.bgColor) {
-      wsFin.getCell(r, 2).fill = headerFill(options.bgColor);
-      wsFin.getCell(r, 2).border = thinBorder(options?.borderColor || COLORS.subtleBorder);
+  // Helper: add a financial row with formulas
+  const FIN_FMT = '\u20AC#,##0';
+  const finRow = (row: number, label: string, yr0Formula: string, yr0Result: number, yrNFormula: string, yrNResult: number, isTotal: boolean) => {
+    setLabel(wsFin, row, 2, label);
+    if (isTotal) wsFin.getCell(row, 2).font = { ...F.label, bold: true };
+
+    // Year 0
+    const c0 = yearCols[0];
+    if (isTotal) {
+      setTotalCell(wsFin, row, c0, { formula: yr0Formula, result: yr0Result }, FIN_FMT);
+    } else {
+      setCalcCell(wsFin, row, c0, { formula: yr0Formula, result: yr0Result }, FIN_FMT);
     }
 
-    for (let y = 0; y <= years; y++) {
-      const cell = wsFin.getCell(r, 3 + y);
-      cell.value = yearValues[y] || 0;
-      cell.numFmt = '€#,##0';
-      cell.font = options?.isBold ? FONT.value : FONT.label;
-      cell.alignment = { horizontal: 'right' };
-      if (options?.bgColor) {
-        cell.fill = headerFill(options.bgColor);
-        cell.border = thinBorder(options?.borderColor || COLORS.subtleBorder);
+    // Years 1..N
+    for (let y = 1; y <= years; y++) {
+      const col = yearCols[y];
+      if (isTotal) {
+        setTotalCell(wsFin, row, col, { formula: yrNFormula, result: yrNResult }, FIN_FMT);
+      } else {
+        setCalcCell(wsFin, row, col, { formula: yrNFormula, result: yrNResult }, FIN_FMT);
       }
     }
 
-    const tCell = wsFin.getCell(r, totColIdx);
-    tCell.value = total;
-    tCell.numFmt = '€#,##0';
-    tCell.font = options?.isBold
-      ? { ...FONT.valueLarge, color: { argb: total >= 0 ? COLORS.accentGreen : 'FFDC2626' } }
-      : FONT.value;
-    tCell.alignment = { horizontal: 'right' };
-    if (options?.bgColor) {
-      tCell.fill = headerFill(options.bgColor);
-      tCell.border = thinBorder(options?.borderColor || COLORS.subtleBorder);
+    // Total column = SUM
+    const sumRange = `${addr(yearCols[0], row)}:${addr(yearCols[years], row)}`;
+    const totalResult = yr0Result + yrNResult * years;
+    if (isTotal) {
+      setTotalCell(wsFin, row, totalCol, { formula: `SUM(${sumRange})`, result: totalResult }, FIN_FMT);
+    } else {
+      setCalcCell(wsFin, row, totalCol, { formula: `SUM(${sumRange})`, result: totalResult }, FIN_FMT);
     }
   };
 
   // BESPARING section
-  r++;
-  wsFin.getCell(r, 2).value = 'BESPARING';
-  wsFin.getCell(r, 2).font = FONT.sectionTitle;
-  wsFin.getCell(r, 2).border = { bottom: { style: 'medium', color: { argb: COLORS.accentGreen } } };
+  r = 8;
+  addSectionHeader(wsFin, r, 2, 'BESPARING');
 
-  // Year 0 = 0, Year 1..n = per year value
-  const savingsPerYearArr = Array.from({ length: years + 1 }, (_, y) => y === 0 ? 0 : sggzSavingsPerYear);
-  const bggzSavingsPerYearArr = Array.from({ length: years + 1 }, (_, y) => y === 0 ? 0 : bggzSavingsPerYear);
-  const totalSavingsPerYearArr = Array.from({ length: years + 1 }, (_, y) => y === 0 ? 0 : totalSavingsPerYear);
+  r = 9;
+  finRow(r, 'SGGZ-besparing (directe reductie)', '0', 0,
+    `${ref(IMP, M_COL, M.VOL_SGGZ_REDUCED)}*${ref(INP, I_COL, I.SGGZ_COST)}`, sggzReduced * sggzCost, false);
 
-  addFinRow('SGGZ-besparing (directe reductie)', Array.from({ length: years + 1 }, (_, y) => y === 0 ? 0 : sggzReduced * sggzCost), sggzReduced * sggzCost * years);
-  addFinRow('Verschuivingsbesparing (SGGZ→BGGZ)', Array.from({ length: years + 1 }, (_, y) => y === 0 ? 0 : shiftedToBggz * (sggzCost - bggzCost)), shiftedToBggz * (sggzCost - bggzCost) * years);
-  addFinRow('BGGZ-besparing', bggzSavingsPerYearArr, bggzSavingsPerYear * years);
-  addFinRow('Totale besparing', totalSavingsPerYearArr, totalSavingsPerYear * years, { isBold: true, bgColor: COLORS.outputBg, borderColor: COLORS.outputBorder });
+  r = 10;
+  finRow(r, 'Verschuivingsbesparing (SGGZ\u2192BGGZ)', '0', 0,
+    `${ref(IMP, M_COL, M.VOL_SHIFTED)}*${ref(INP, I_COL, I.COST_DIFF)}`, shiftedToBggz * (sggzCost - bggzCost), false);
+
+  r = 11;
+  finRow(r, 'BGGZ-besparing', '0', 0,
+    `${ref(IMP, M_COL, M.VOL_BGGZ_REDUCED)}*${ref(INP, I_COL, I.BGGZ_COST)}`, bggzSavingsPerYear, false);
+
+  r = 12;
+  // Total savings: sum of rows 9-11 for each column
+  setLabel(wsFin, r, 2, 'Totale besparing');
+  wsFin.getCell(r, 2).font = { ...F.label, bold: true };
+  for (let y = 0; y <= years; y++) {
+    const col = yearCols[y];
+    const sumF = `SUM(${addr(col, 9)}:${addr(col, 11)})`;
+    const val = y === 0 ? 0 : totalSavingsPerYear;
+    setTotalCell(wsFin, r, col, { formula: sumF, result: val }, FIN_FMT);
+  }
+  setTotalCell(wsFin, r, totalCol, { formula: `SUM(${addr(totalCol, 9)}:${addr(totalCol, 11)})`, result: totalSavingsPerYear * years }, FIN_FMT);
 
   // INVESTERING section
-  r += 2;
-  wsFin.getCell(r, 2).value = 'INVESTERING';
-  wsFin.getCell(r, 2).font = FONT.sectionTitle;
-  wsFin.getCell(r, 2).border = { bottom: { style: 'medium', color: { argb: 'FFDC2626' } } };
+  r = 14;
+  addSectionHeader(wsFin, r, 2, 'INVESTERING');
 
-  // Fixed costs in year 0
-  addFinRow('Vaste kosten (implementatie)', Array.from({ length: years + 1 }, (_, y) => y === 0 ? fixedCosts : 0), fixedCosts, { bgColor: COLORS.assumptionBg, borderColor: COLORS.assumptionBorder });
-
-  // Variable costs per year
-  for (const init of selected) {
-    if (init.costPerSggzYouth > 0) {
-      const varCost = init.costPerSggzYouth * sggzVolume;
-      addFinRow(`  ${init.name} (variabel)`, Array.from({ length: years + 1 }, (_, y) => y === 0 ? 0 : varCost), varCost * years);
-    }
+  r = 15;
+  // Fixed costs: Year 0 only
+  setLabel(wsFin, r, 2, 'Vaste kosten (implementatie)');
+  setCalcCell(wsFin, r, yearCols[0], { formula: ref(IMP, M_COL, M.INV_FIXED), result: fixedCosts }, FIN_FMT);
+  for (let y = 1; y <= years; y++) {
+    setCalcCell(wsFin, r, yearCols[y], { formula: '0', result: 0 }, FIN_FMT);
   }
+  setCalcCell(wsFin, r, totalCol, { formula: `SUM(${addr(yearCols[0], r)}:${addr(yearCols[years], r)})`, result: fixedCosts }, FIN_FMT);
 
-  addFinRow('Totale variabele kosten', Array.from({ length: years + 1 }, (_, y) => y === 0 ? 0 : variableCostsPerYear), variableCostsPerYear * years);
-  addFinRow('Totale investering', Array.from({ length: years + 1 }, (_, y) => y === 0 ? fixedCosts : variableCostsPerYear), totalInvestment, { isBold: true, bgColor: COLORS.assumptionBg, borderColor: COLORS.assumptionBorder });
+  r = 16;
+  // Variable costs: Year 1+ only
+  setLabel(wsFin, r, 2, 'Variabele kosten per jaar');
+  setCalcCell(wsFin, r, yearCols[0], { formula: '0', result: 0 }, FIN_FMT);
+  for (let y = 1; y <= years; y++) {
+    setCalcCell(wsFin, r, yearCols[y], { formula: ref(IMP, M_COL, M.INV_VARIABLE), result: variableCostsPerYear }, FIN_FMT);
+  }
+  setCalcCell(wsFin, r, totalCol, { formula: `SUM(${addr(yearCols[0], r)}:${addr(yearCols[years], r)})`, result: variableCostsPerYear * years }, FIN_FMT);
 
-  // NETTO RESULTAAT
-  r += 2;
-  wsFin.getCell(r, 2).value = 'NETTO RESULTAAT';
-  wsFin.getCell(r, 2).font = FONT.sectionTitle;
-  wsFin.getCell(r, 2).border = { bottom: { style: 'medium', color: { argb: COLORS.headerBg } } };
+  r = 17;
+  // Total investment per year
+  setLabel(wsFin, r, 2, 'Totale kosten');
+  wsFin.getCell(r, 2).font = { ...F.label, bold: true };
+  for (let y = 0; y <= years; y++) {
+    const col = yearCols[y];
+    const sumF = `${addr(col, 15)}+${addr(col, 16)}`;
+    const val = y === 0 ? fixedCosts : variableCostsPerYear;
+    setTotalCell(wsFin, r, col, { formula: sumF, result: val }, FIN_FMT);
+  }
+  setTotalCell(wsFin, r, totalCol, { formula: `SUM(${addr(totalCol, 15)}:${addr(totalCol, 16)})`, result: totalInvestment }, FIN_FMT);
 
-  const netPerYear = Array.from({ length: years + 1 }, (_, y) => y === 0 ? -fixedCosts : totalSavingsPerYear - variableCostsPerYear);
+  // NETTO RESULTAAT section
+  r = 19;
+  addSectionHeader(wsFin, r, 2, 'NETTO RESULTAAT');
+
+  r = 20;
+  // Net per year = savings - costs
+  setLabel(wsFin, r, 2, 'Netto resultaat per jaar');
+  wsFin.getCell(r, 2).font = { ...F.label, bold: true };
+  for (let y = 0; y <= years; y++) {
+    const col = yearCols[y];
+    const netF = `${addr(col, 12)}-${addr(col, 17)}`;
+    const val = y === 0 ? -fixedCosts : totalSavingsPerYear - variableCostsPerYear;
+    setTotalCell(wsFin, r, col, { formula: netF, result: val }, FIN_FMT);
+  }
   const netTotal = totalSavingsPerYear * years - totalInvestment;
-  addFinRow('Netto resultaat per jaar', netPerYear, netTotal, { isBold: true, bgColor: COLORS.outputBg, borderColor: COLORS.outputBorder });
+  setTotalCell(wsFin, r, totalCol, { formula: `SUM(${addr(yearCols[0], r)}:${addr(yearCols[years], r)})`, result: netTotal }, FIN_FMT);
 
-  // Cumulatief
-  const cumulative: number[] = [];
+  r = 21;
+  // Cumulative
+  setLabel(wsFin, r, 2, 'Cumulatief netto resultaat');
+  wsFin.getCell(r, 2).font = { ...F.label, bold: true };
   let cumSum = 0;
   for (let y = 0; y <= years; y++) {
-    cumSum += netPerYear[y];
-    cumulative.push(cumSum);
+    const col = yearCols[y];
+    const netVal = y === 0 ? -fixedCosts : netSavingsPerYear;
+    cumSum += netVal;
+    if (y === 0) {
+      setTotalCell(wsFin, r, col, { formula: addr(col, 20), result: cumSum }, FIN_FMT);
+    } else {
+      // Previous cumulative + current net
+      setTotalCell(wsFin, r, col, { formula: `${addr(yearCols[y - 1], r)}+${addr(col, 20)}`, result: cumSum }, FIN_FMT);
+    }
   }
-  addFinRow('Cumulatief netto resultaat', cumulative, cumulative[cumulative.length - 1], { isBold: true, bgColor: COLORS.outputBg, borderColor: COLORS.outputBorder });
+  // Total col = last cumulative value
+  setTotalCell(wsFin, r, totalCol, { formula: addr(yearCols[years], r), result: cumSum }, FIN_FMT);
 
-  // Break-even indicator
-  r += 2;
-  const breakEvenYear = cumulative.findIndex(v => v >= 0);
-  if (breakEvenYear >= 0) {
-    wsFin.getCell(r, 2).value = `Break-even bereikt in jaar ${breakEvenYear}`;
-    wsFin.getCell(r, 2).font = { ...FONT.value, color: { argb: COLORS.accentGreen } };
-  } else {
-    wsFin.getCell(r, 2).value = `Break-even wordt niet bereikt binnen ${years} jaar`;
-    wsFin.getCell(r, 2).font = { ...FONT.value, color: { argb: 'FFDC2626' } };
+  // Break-even
+  r = 23;
+  const breakEvenArr: number[] = [];
+  let cs = 0;
+  for (let y = 0; y <= years; y++) {
+    cs += y === 0 ? -fixedCosts : netSavingsPerYear;
+    breakEvenArr.push(cs);
   }
+  const beYear = breakEvenArr.findIndex(v => v >= 0);
+  wsFin.getCell(r, 2).value = beYear >= 0 ? `Break-even in jaar ${beYear}` : `Break-even niet bereikt binnen ${years} jaar`;
+  wsFin.getCell(r, 2).font = { name: 'Arial', size: 10, bold: true, italic: true, color: { argb: beYear >= 0 ? '008000' : 'CC0000' } };
 
   // VOLUME section
-  r += 2;
-  wsFin.getCell(r, 2).value = 'VOLUME-EFFECTEN';
-  wsFin.getCell(r, 2).font = FONT.sectionTitle;
-  wsFin.getCell(r, 2).border = { bottom: { style: 'medium', color: { argb: COLORS.headerBg } } };
+  r = 25;
+  addSectionHeader(wsFin, r, 2, 'VOLUME-EFFECTEN (trajecten per jaar)');
+  r++;
 
-  const addVolRow = (label: string, perYear: number) => {
-    r++;
-    wsFin.getCell(r, 2).value = label;
-    wsFin.getCell(r, 2).font = FONT.label;
-    let cum = 0;
-    for (let y = 0; y <= years; y++) {
-      const v = y === 0 ? 0 : perYear;
-      cum += v;
-      const cell = wsFin.getCell(r, 3 + y);
-      cell.value = v;
-      cell.numFmt = '#,##0';
-      cell.alignment = { horizontal: 'right' };
-      cell.font = FONT.value;
+  const addVolRow = (row: number, label: string, ref_row: number, perYearVal: number) => {
+    setLabel(wsFin, row, 2, label);
+    setCalcCell(wsFin, row, yearCols[0], { formula: '0', result: 0 }, '#,##0');
+    for (let y = 1; y <= years; y++) {
+      setCalcCell(wsFin, row, yearCols[y], { formula: ref(IMP, M_COL, ref_row), result: perYearVal }, '#,##0');
     }
-    const tCell = wsFin.getCell(r, totColIdx);
-    tCell.value = perYear * years;
-    tCell.numFmt = '#,##0';
-    tCell.font = FONT.value;
-    tCell.alignment = { horizontal: 'right' };
+    setCalcCell(wsFin, row, totalCol, { formula: `SUM(${addr(yearCols[0], row)}:${addr(yearCols[years], row)})`, result: perYearVal * years }, '#,##0');
   };
 
-  addVolRow('Minder SGGZ-trajecten', sggzReduced);
-  addVolRow('Minder BGGZ-trajecten', bggzReduced);
-  addVolRow('Verschoven naar BGGZ', shiftedToBggz);
+  addVolRow(r, 'Minder SGGZ-trajecten', M.VOL_SGGZ_REDUCED, sggzReduced);
+  addVolRow(r + 1, 'Minder BGGZ-trajecten', M.VOL_BGGZ_REDUCED, bggzReduced);
+  addVolRow(r + 2, 'Verschoven naar BGGZ', M.VOL_SHIFTED, shiftedToBggz);
 
   // ================================================================
-  //  SHEET 6: INSTRUCTIES
+  //  SHEET: 4. OUTPUT
   // ================================================================
-  const wsInstr = wb.addWorksheet('Instructies', { properties: { tabColor: { argb: 'F59E0B' } } });
-  wsInstr.columns = [
-    { width: 4 },
-    { width: 80 },
-    { width: 4 },
-  ];
+  const wsOut = wb.addWorksheet(SN.OUTPUT, { properties: { tabColor: { argb: C.BORDEAUX } } });
+  wsOut.columns = [{ width: 3 }, { width: 40 }, { width: 20 }, { width: 20 }, { width: 3 }];
 
   r = 2;
-  wsInstr.mergeCells(r, 2, r, 2);
-  wsInstr.getCell(r, 2).value = 'INSTRUCTIES — HOE GEBRUIK JE DIT BESTAND?';
-  wsInstr.getCell(r, 2).font = FONT.header;
-  wsInstr.getCell(r, 2).fill = headerFill(COLORS.headerBg);
-  wsInstr.getRow(r).height = 36;
+  wsOut.getCell(r, 2).value = '4. Output: Samenvatting';
+  wsOut.getCell(r, 2).font = { name: 'Arial', size: 14, bold: true, color: { argb: C.BLACK } };
+  r++;
+  addBar(wsOut, r, 1, 5);
 
-  const instructions: [string, string[]][] = [
-    ['Overzicht van dit bestand', [
-      'Dit Excel-bestand bevat een volledige businesscase voor het programma "Kwaliteit als Medicijn".',
-      'Het is gegenereerd op basis van de selectie die je hebt gemaakt in de online Impact Simulator.',
-      'Het bestand bevat 6 tabs die samen een compleet financieel en inhoudelijk overzicht geven.',
+  r = 6;
+  addSectionHeader(wsOut, r, 2, 'Kernresultaten');
+  r++;
+  addColumnHeaders(wsOut, r, [{ col: 2, text: 'KPI' }, { col: 3, text: 'Waarde' }, { col: 4, text: 'Eenheid' }]);
+
+  const outputKPIs: [string, string, number | string, string, string][] = [
+    // [label, formula, result, numFmt, unit]
+    ['Gecombineerde SGGZ-reductie', ref(IMP, M_COL, M.SGGZ_COMBINED), combinedSggzRed, '0.0%', '%'],
+    ['Gecombineerde BGGZ-reductie', ref(IMP, M_COL, M.BGGZ_COMBINED), combinedBggzRed, '0.0%', '%'],
+    ['Verschuiving SGGZ\u2192BGGZ', ref(IMP, M_COL, M.SHIFT_COMBINED), combinedShift, '0.0%', '%'],
+    ['Besparing per jaar', ref(IMP, M_COL, M.SAVE_TOTAL), totalSavingsPerYear, '\u20AC#,##0', '\u20AC/jaar'],
+    ['Totale besparing (cumulatief)', `${ref(IMP, M_COL, M.SAVE_TOTAL)}*${ref(INP, I_COL, I.YEARS)}`, totalSavingsPerYear * years, '\u20AC#,##0', `\u20AC (${years} jaar)`],
+    ['Totale investering', ref(IMP, M_COL, M.INV_TOTAL), totalInvestment, '\u20AC#,##0', '\u20AC'],
+    ['Netto besparing per jaar', ref(IMP, M_COL, M.NET_SAVINGS), netSavingsPerYear, '\u20AC#,##0', '\u20AC/jaar'],
+    ['Minder SGGZ-trajecten/jaar', ref(IMP, M_COL, M.VOL_SGGZ_REDUCED), sggzReduced, '#,##0', 'trajecten/jaar'],
+    ['Minder BGGZ-trajecten/jaar', ref(IMP, M_COL, M.VOL_BGGZ_REDUCED), bggzReduced, '#,##0', 'trajecten/jaar'],
+    ['Verschoven naar BGGZ/jaar', ref(IMP, M_COL, M.VOL_SHIFTED), shiftedToBggz, '#,##0', 'trajecten/jaar'],
+  ];
+
+  r = 8;
+  for (const [label, formula, result, numFmt, unit] of outputKPIs) {
+    setLabel(wsOut, r, 2, label);
+    setCalcCell(wsOut, r, 3, { formula, result: result as number }, numFmt);
+    wsOut.getCell(r, 4).value = unit;
+    wsOut.getCell(r, 4).font = F.label;
+    r++;
+  }
+
+  // ROI
+  r += 1;
+  addSectionHeader(wsOut, r, 2, 'Rendement');
+  r++;
+  setLabel(wsOut, r, 2, 'ROI (netto besparing / investering)');
+  const roiVal = totalInvestment > 0 ? (totalSavingsPerYear * years - totalInvestment) / totalInvestment : 0;
+  setCalcCell(wsOut, r, 3, {
+    formula: `IF(${ref(IMP, M_COL, M.INV_TOTAL)}=0,0,(${ref(IMP, M_COL, M.SAVE_TOTAL)}*${ref(INP, I_COL, I.YEARS)}-${ref(IMP, M_COL, M.INV_TOTAL)})/${ref(IMP, M_COL, M.INV_TOTAL)})`,
+    result: roiVal,
+  }, '0%');
+  wsOut.getCell(r, 4).value = '%'; wsOut.getCell(r, 4).font = F.label;
+
+  r++;
+  setLabel(wsOut, r, 2, 'Payback periode');
+  wsOut.getCell(r, 3).value = beYear >= 0 ? `Jaar ${beYear}` : 'n.v.t.';
+  wsOut.getCell(r, 3).font = F.calcVal;
+  wsOut.getCell(r, 3).border = greenBorder();
+
+  // ================================================================
+  //  SHEET: 5. CHECKS
+  // ================================================================
+  const wsChk = wb.addWorksheet(SN.CHECKS, { properties: { tabColor: { argb: C.BORDEAUX } } });
+  wsChk.columns = [{ width: 3 }, { width: 44 }, { width: 20 }, { width: 14 }, { width: 36 }, { width: 3 }];
+
+  r = 2;
+  wsChk.getCell(r, 2).value = '5. Checks';
+  wsChk.getCell(r, 2).font = { name: 'Arial', size: 14, bold: true, color: { argb: C.BLACK } };
+  r++;
+  addBar(wsChk, r, 1, 6);
+
+  r = 6;
+  addColumnHeaders(wsChk, r, [
+    { col: 2, text: 'Check' }, { col: 3, text: 'Formule' }, { col: 4, text: 'Status' }, { col: 5, text: 'Toelichting' },
+  ]);
+
+  const checks: [string, string, boolean, string][] = [
+    [
+      'Totale besparing = SGGZ + BGGZ',
+      `IF(ABS(${ref(IMP, M_COL, M.SAVE_TOTAL)}-${ref(IMP, M_COL, M.SAVE_SGGZ_TOTAL)}-${ref(IMP, M_COL, M.SAVE_BGGZ)})<1,"OK","ERROR")`,
+      Math.abs(totalSavingsPerYear - sggzSavingsPerYear - bggzSavingsPerYear) < 1,
+      'Totale besparing moet gelijk zijn aan som SGGZ + BGGZ',
+    ],
+    [
+      'SGGZ resterend + gereduceerd = origineel',
+      `IF(ABS(${ref(IMP, M_COL, M.VOL_SGGZ_REMAINING)}+${ref(IMP, M_COL, M.VOL_SGGZ_REDUCED)}-${ref(IMP, M_COL, M.VOL_SGGZ)})<1,"OK","ERROR")`,
+      Math.abs(sggzRemaining + sggzReduced - sggzVolume) < 1,
+      'Volume balanscontrole SGGZ',
+    ],
+    [
+      'Reductiepercentages >= 0',
+      `IF(AND(${ref(IMP, M_COL, M.SGGZ_COMBINED)}>=0,${ref(IMP, M_COL, M.BGGZ_COMBINED)}>=0),"OK","ERROR")`,
+      combinedSggzRed >= 0 && combinedBggzRed >= 0,
+      'Reductiepercentages mogen niet negatief zijn',
+    ],
+    [
+      'Investering >= 0',
+      `IF(${ref(IMP, M_COL, M.INV_TOTAL)}>=0,"OK","ERROR")`,
+      totalInvestment >= 0,
+      'Totale investering moet positief zijn',
+    ],
+    [
+      'Volumes >= 0',
+      `IF(AND(${ref(INP, I_COL, I.SGGZ_VOL)}>=0,${ref(INP, I_COL, I.BGGZ_VOL)}>=0),"OK","ERROR")`,
+      sggzVolume >= 0 && bggzVolume >= 0,
+      'Input volumes mogen niet negatief zijn',
+    ],
+    [
+      'Netto = Besparing - Variabel',
+      `IF(ABS(${ref(IMP, M_COL, M.NET_SAVINGS)}-${ref(IMP, M_COL, M.SAVE_TOTAL)}+${ref(IMP, M_COL, M.INV_VARIABLE)})<1,"OK","ERROR")`,
+      Math.abs(netSavingsPerYear - totalSavingsPerYear + variableCostsPerYear) < 1,
+      'Netto besparing = totale besparing - variabele kosten',
+    ],
+  ];
+
+  r = 7;
+  for (const [label, formula, result, note] of checks) {
+    setLabel(wsChk, r, 2, label);
+    wsChk.getCell(r, 3).value = '(zie formule)';
+    wsChk.getCell(r, 3).font = F.note;
+    setCheckCell(wsChk, r, 4, formula, result);
+    wsChk.getCell(r, 5).value = note;
+    wsChk.getCell(r, 5).font = F.note;
+    r++;
+  }
+
+  // ================================================================
+  //  SHEET: A.1 FORMAT CONVENTION
+  // ================================================================
+  const wsFmt = wb.addWorksheet(SN.FORMAT, { properties: { tabColor: { argb: '808080' } } });
+  wsFmt.columns = [{ width: 3 }, { width: 48 }, { width: 20 }, { width: 3 }];
+
+  r = 2;
+  wsFmt.getCell(r, 2).value = 'A.1 Format Convention';
+  wsFmt.getCell(r, 2).font = { name: 'Arial', size: 14, bold: true, color: { argb: C.BLACK } };
+  r++;
+  addBar(wsFmt, r, 1, 4);
+
+  const fmtItems: [string, () => void][] = [
+    ['Titles and table captions', () => {
+      const c = wsFmt.getCell(r, 3);
+      c.value = 'Title';
+      c.font = F.title;
+      c.fill = solidFill(C.BORDEAUX);
+      c.alignment = { horizontal: 'center' };
+    }],
+    ['Input cells (static) — blue italic', () => {
+      const c = wsFmt.getCell(r, 3);
+      c.value = '99.0';
+      c.font = F.inputVal;
+      c.alignment = { horizontal: 'center' };
+    }],
+    ['Input cells (dynamic) — yellow bg, blue italic', () => {
+      const c = wsFmt.getCell(r, 3);
+      c.value = '99.0';
+      c.font = F.inputVal;
+      c.fill = solidFill(C.YELLOW_BG);
+      c.alignment = { horizontal: 'center' };
+    }],
+    ['Calculated cells — green border', () => {
+      const c = wsFmt.getCell(r, 3);
+      c.value = '99.0';
+      c.font = F.calcVal;
+      c.border = greenBorder();
+      c.alignment = { horizontal: 'center' };
+    }],
+    ['Informative cells — gray text', () => {
+      const c = wsFmt.getCell(r, 3);
+      c.value = '99.0';
+      c.font = F.infoVal;
+      c.alignment = { horizontal: 'center' };
+    }],
+    ['Totals / subtotals — bold', () => {
+      const c = wsFmt.getCell(r, 3);
+      c.value = '99.0';
+      c.font = F.totalVal;
+      c.alignment = { horizontal: 'center' };
+    }],
+    ['Check-sum cells (if negative) — red bg', () => {
+      const c = wsFmt.getCell(r, 3);
+      c.value = '-';
+      c.font = F.checkERR;
+      c.fill = solidFill(C.RED_BG);
+      c.alignment = { horizontal: 'center' };
+    }],
+  ];
+
+  r = 6;
+  for (const [label, applyStyling] of fmtItems) {
+    setLabel(wsFmt, r, 2, label);
+    applyStyling();
+    r += 2;
+  }
+
+  // ================================================================
+  //  SHEET: A.2 DOCUMENTATIE
+  // ================================================================
+  const wsDoc = wb.addWorksheet(SN.DOCS, { properties: { tabColor: { argb: '808080' } } });
+  wsDoc.columns = [{ width: 3 }, { width: 80 }, { width: 3 }];
+
+  r = 2;
+  wsDoc.getCell(r, 2).value = 'A.2 Documentatie';
+  wsDoc.getCell(r, 2).font = { name: 'Arial', size: 14, bold: true, color: { argb: C.BLACK } };
+  r++;
+  addBar(wsDoc, r, 1, 3);
+
+  const docSections: [string, string[]][] = [
+    ['Doel van dit model', [
+      'Dit Excel-model bevat de financiele businesscase voor het programma "Kwaliteit als Medicijn".',
+      'Het berekent de verwachte volumereductie en kostenbesparing bij implementatie van initiatieven',
+      'voor de Jeugd GGZ in Zuid-Holland Zuid.',
     ]],
-    ['Tabbladen', [
-      '1. Samenvatting — Executive summary met de belangrijkste input, resultaten en financiële impact.',
-      '2. Input & Aannames — Overzicht van alle ingevoerde parameters en de achterliggende aannames.',
-      '3. Initiatieven — Details van alle 5 initiatieven met hun reductiepercentages en kosten.',
-      '4. Berekeningen — Stap-voor-stap uitleg van elke berekening met de gebruikte formules.',
-      '5. Financieel Model — Jaaroverzicht met besparing, investering en netto resultaat per jaar + cumulatief.',
-      '6. Instructies — Dit tabblad met uitleg over het gebruik van het bestand.',
+    ['Scope', [
+      `Schaal: ${scaleLabel}`,
+      `Looptijd: ${years} jaar`,
+      `Geselecteerde initiatieven: ${selected.map(i => i.name).join(', ')}`,
     ]],
-    ['Kleurcodering', [
-      'BLAUW/PAARS (koppen) — Sectiekoppen en titels',
-      'LICHTBLAUW — INPUT: door jou ingevoerde gegevens (volumes, kosten, schaal, looptijd)',
-      'LICHTGEEL — AANNAME: standaardwaarden en vaste parameters uit het programma',
-      'LICHTGROEN — OUTPUT: berekende resultaten en uitkomsten',
-    ]],
-    ['Aanpassen van de business case', [
-      'Dit bestand bevat vaste waarden (geen live Excel-formules die automatisch herberekenen).',
-      'Wil je een andere configuratie doorrekenen? Ga dan terug naar de online Impact Simulator',
-      'en maak een nieuwe selectie. Je kunt eenvoudig een nieuw Excel-bestand genereren.',
+    ['Berekeningslogica', [
+      'Gecombineerde reductie: 1 - product(1 - reductie_i) per actief initiatief.',
+      'Dit is een multiplicatieve formule die dubbeltellingen voorkomt.',
+      'Voorbeeld: 10% + 15% = 1 - (0.90 * 0.85) = 23.5% (niet 25%).',
       '',
-      'Tip: Gebruik dit bestand als basis voor je eigen presentatie of voorstel.',
-      'Je kunt de data kopiëren naar PowerPoint, Google Slides of andere tools.',
+      'Verschuiving SGGZ naar BGGZ wordt toegepast op het resterende SGGZ-volume na reductie.',
+      'Jongeren verdwijnen niet uit zorg, maar verschuiven naar lichtere (goedkopere) zorg.',
+      '',
+      'Vaste kosten zijn eenmalig (jaar 0). Variabele kosten zijn jaarlijks.',
     ]],
-    ['Berekeningsmethodiek', [
-      'De gecombineerde reductiepercentages worden berekend met een multiplicatieve formule:',
-      '  Gecombineerde reductie = 1 - ∏(1 - reductie_i)',
-      '',
-      'Dit voorkomt dubbeltellingen wanneer meerdere initiatieven tegelijk worden ingezet.',
-      'Voorbeeld: als initiatief A 10% reduceert en initiatief B 15%, dan is de gecombineerde',
-      'reductie niet 25% maar: 1 - (0,90 × 0,85) = 1 - 0,765 = 23,5%.',
-      '',
-      'De verschuiving van SGGZ naar BGGZ wordt toegepast op het resterende SGGZ-volume',
-      'na reductie. Dit betekent dat jongeren niet uit zorg verdwijnen, maar verschuiven',
-      'naar een lichtere (en goedkopere) vorm van zorg.',
+    ['Bronnen aannames', [
+      'SGGZ-volume ZHZ-regio: ca. 4.800 jongeren/jaar (10 gemeenten, ~250.000 inwoners)',
+      'BGGZ-volume ZHZ-regio: ca. 3.200 jongeren/jaar',
+      'SGGZ-volume landelijk: ca. 160.000 jongeren/jaar (390 gemeenten)',
+      'BGGZ-volume landelijk: ca. 240.000 jongeren/jaar',
+      'Kosten per SGGZ-traject: standaard EUR 3.800 (regionaal gemiddelde)',
+      'Kosten per BGGZ-traject: standaard EUR 1.300 (regionaal gemiddelde)',
+      'Reductiepercentages per initiatief: Kwaliteit als Medicijn programma-evaluatie',
+    ]],
+    ['Model conventies', [
+      'Alle formules in het berekeningsblad refereren naar het Input-blad — geen hardcoded waarden.',
+      'Gele cellen = door gebruiker aanpasbare waarden.',
+      'Blauwe tekst = input (statisch).',
+      'Groene rand = berekend resultaat.',
+      'Grijze tekst = informatief / hulpwaarde.',
+      'Vet = totalen en subtotalen.',
     ]],
     ['Disclaimer', [
-      'Alle schattingen zijn indicatief en gebaseerd op regionale gemiddelden en aannames',
-      'uit het programma Kwaliteit als Medicijn in Zuid-Holland Zuid.',
-      'De daadwerkelijke resultaten kunnen afwijken afhankelijk van:',
-      '  • De specifieke context van uw organisatie',
-      '  • De kwaliteit van de implementatie',
-      '  • De samenstelling van de patiëntenpopulatie',
-      '  • Externe factoren (beleid, financiering, demografie)',
-      '',
-      'Dit bestand is bedoeld als ondersteuning bij besluitvorming en niet als garantie van resultaten.',
+      'Alle schattingen zijn indicatief en gebaseerd op regionale gemiddelden en aannames uit het',
+      'programma Kwaliteit als Medicijn in Zuid-Holland Zuid. De daadwerkelijke resultaten kunnen',
+      'afwijken afhankelijk van de specifieke context, implementatiekwaliteit en patientenpopulatie.',
+      'Dit model is bedoeld als ondersteuning bij besluitvorming, niet als garantie van resultaten.',
     ]],
-    ['Contact & meer informatie', [
-      'Dit bestand is gegenereerd door de Kwaliteit als Medicijn Impact Simulator.',
-      'Voor vragen over het programma of de berekeningen, neem contact op met het programmateam.',
+    ['Versie-informatie', [
+      `Gegenereerd: ${dateStr}`,
+      'Versie: 1.0',
+      'Bron: Kwaliteit als Medicijn — Impact Simulator',
     ]],
   ];
 
-  for (const [title, lines] of instructions) {
-    r += 2;
-    wsInstr.getCell(r, 2).value = title;
-    wsInstr.getCell(r, 2).font = FONT.sectionTitle;
-    wsInstr.getCell(r, 2).border = { bottom: { style: 'medium', color: { argb: COLORS.headerBg } } };
+  r = 6;
+  for (const [title, lines] of docSections) {
+    addSectionHeader(wsDoc, r, 2, title);
     r++;
     for (const line of lines) {
-      wsInstr.getCell(r, 2).value = line;
-      wsInstr.getCell(r, 2).font = line.startsWith('  ') ? { ...FONT.instruction, name: 'Consolas' } : FONT.instruction;
-      wsInstr.getCell(r, 2).alignment = { wrapText: true };
+      if (line === '') { r++; continue; }
+      wsDoc.getCell(r, 2).value = line;
+      wsDoc.getCell(r, 2).font = F.label;
+      wsDoc.getCell(r, 2).alignment = { wrapText: true };
       r++;
     }
+    r++;
   }
 
   // ================================================================
@@ -921,6 +1079,6 @@ export async function generateBusinesscaseExcel(params: ExcelExportParams): Prom
   // ================================================================
   const buffer = await wb.xlsx.writeBuffer();
   const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-  const dateStr = new Date().toISOString().slice(0, 10);
-  saveAs(blob, `Businesscase_KAM_${scaleLabel.replace(/[^a-zA-Z0-9]/g, '_')}_${dateStr}.xlsx`);
+  const fileName = `Businesscase_KAM_${scaleLabel.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+  saveAs(blob, fileName);
 }
