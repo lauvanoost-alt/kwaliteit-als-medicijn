@@ -193,3 +193,43 @@ export function setCheckCell(ws: ExcelJS.Worksheet, row: number, col: number, fo
   }
   cell.alignment = { horizontal: 'center' };
 }
+
+/** Add mini format convention legend at top of a sheet */
+export function addFormatLegend(ws: ExcelJS.Worksheet, startRow: number, col: number, colEnd: number): number {
+  let r = startRow;
+  ws.mergeCells(r, col, r, colEnd);
+  ws.getCell(r, col).value = 'Format Conventie';
+  ws.getCell(r, col).font = { name: 'Arial', size: 8, bold: true, color: { argb: C.GRAY } };
+  r++;
+
+  const items: [string, Partial<ExcelJS.Font>, ExcelJS.Fill | undefined, Partial<ExcelJS.Borders> | undefined][] = [
+    ['Blauw cursief = statische input', F.inputVal, undefined, undefined],
+    ['Geel + blauw = aanpasbare input', F.inputVal, solidFill(C.YELLOW_BG), undefined],
+    ['Groene rand = berekend', F.calcVal, undefined, greenBorder()],
+    ['Grijs = informatief', F.infoVal, undefined, undefined],
+    ['Vet = totaal', F.totalVal, undefined, undefined],
+  ];
+
+  for (const [text, font, fill, border] of items) {
+    ws.getCell(r, col).value = text;
+    ws.getCell(r, col).font = { name: 'Arial', size: 7, italic: true, color: { argb: C.GRAY } };
+    const sample = ws.getCell(r, col + 1);
+    sample.value = '99';
+    sample.font = font;
+    if (fill) sample.fill = fill;
+    if (border) sample.border = border;
+    sample.alignment = { horizontal: 'center' };
+    ws.getRow(r).height = 13;
+    r++;
+  }
+  r++; // blank separator row
+  return r;
+}
+
+/** Add X navigation marker at bottom of a sheet for Ctrl+Shift+Arrow */
+export function addEndMarker(ws: ExcelJS.Worksheet, row: number, col: number) {
+  const cell = ws.getCell(row, col);
+  cell.value = 'X';
+  cell.font = { name: 'Arial', size: 8, bold: true, color: { argb: C.GRAY_LIGHT } };
+  cell.alignment = { horizontal: 'center' };
+}
