@@ -21,6 +21,7 @@ import {
   FileSpreadsheet,
 } from 'lucide-react';
 import { generateBusinesscaseExcel } from '@/lib/generateBusinesscaseExcel';
+import { generateBusinesscasePptx } from '@/lib/generateBusinesscasePptx';
 
 /* ------------------------------------------------------------------ */
 /*  INITIATIVE DATA                                                    */
@@ -513,6 +514,22 @@ export default function ImpactSimulatorPage() {
     const sggz = typeof sggzVolume === 'number' ? sggzVolume : 0;
     const bggz = typeof bggzVolume === 'number' ? bggzVolume : 0;
     await generateBusinesscaseExcel({
+      sggzVolume: sggz,
+      bggzVolume: bggz,
+      sggzCost,
+      bggzCost,
+      years,
+      scale,
+      selectedInitiativeIds: Array.from(selectedInitiatives),
+      allInitiatives: initiativeOptions,
+    });
+  }, [results, sggzVolume, bggzVolume, sggzCost, bggzCost, selectedInitiatives, years, scale]);
+
+  const downloadPptx = useCallback(async () => {
+    if (!results) return;
+    const sggz = typeof sggzVolume === 'number' ? sggzVolume : 0;
+    const bggz = typeof bggzVolume === 'number' ? bggzVolume : 0;
+    await generateBusinesscasePptx({
       sggzVolume: sggz,
       bggzVolume: bggz,
       sggzCost,
@@ -1203,9 +1220,17 @@ export default function ImpactSimulatorPage() {
                   <FileSpreadsheet size={20} />
                   Download als Excel
                 </button>
+                <button
+                  type="button"
+                  onClick={downloadPptx}
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 px-8 py-4 text-base font-bold text-white shadow-lg hover:from-amber-700 hover:to-orange-700 transition-all hover:shadow-xl hover:-translate-y-0.5"
+                >
+                  <Presentation size={20} />
+                  Download als PowerPoint
+                </button>
               </div>
               <p className="mt-3 text-xs text-gray-400">
-                PDF: print-vriendelijke versie &nbsp;|&nbsp; Excel: volledige businesscase met berekeningen, formules en meerdere tabbladen
+                PDF: print-vriendelijk &nbsp;|&nbsp; Excel: formules &amp; berekeningen &nbsp;|&nbsp; PowerPoint: consulting-stijl presentatie
               </p>
             </div>
 
